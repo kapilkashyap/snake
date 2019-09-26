@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="" />
+		<meta name="author" content="Kapil Kashyap" />
+		<title>Snake Reloaded!</title>
+		<link rel="stylesheet" type="text/css" href="style/default.css" />
+	</head>
+	<body>
+		<div class="body-container">
+			<div class="body-column">
+				<div class="game-container game-container-dimensions">
+					<div class="game-stats">
+						<div>
+							<div class="level">
+								<div class="label">Level:</div>
+								<div class="value"></div>
+							</div>
+							<div class="score">
+								<div class="label">Score:</div>
+								<div class="value">0</div>
+							</div>
+							<div class="time">
+								<div class="label">Time:</div>
+								<div class="value">0s</div>
+							</div>
+						</div>
+						<div class="life">
+							<div class="label">Life:</div>
+							<div class="value">
+								<span class="">+</span>
+								<span class="">+</span>
+								<span class="">+</span>
+							</div>
+						</div>
+					</div>
+					<div class="game-indicator">
+						<div class="boost-timeout-bar"></div>
+					</div>
+					<div class="game-arena">
+						<div class="instructions show">
+							<div class="selectMode">
+								<div class="label">Modes</div>
+								<div class="modes"></div>
+							</div>
+							<div class="selectLevel">
+								<div class="label">Levels</div>
+								<div class="levels"></div>
+							</div>
+							<div class="details">
+								<div class="label">Instructions</div>
+								<ol class="classic-mode hide">
+									<li>Use <span style="font-weight: bold;">WASD</span>/arrow keys/swipe to move around.</li>
+									<li>Avoid hitting the border or snake body to stay alive.</li>
+									<li>Consume food to increase level.</li>
+									<li>Move around a lot to score more points.</li>
+								</ol>
+								<ol class="challenge-mode hide">
+									<li>Use <span style="font-weight: bold;">WASD</span>/arrow keys/swipe to move around.</li>
+									<li>Avoid hitting the border or snake body to stay alive.</li>
+									<li>Consume food to increase in length.</li>
+									<li>Cover the whole grid.</li>
+								</ol>
+								<ol class="maze-mode hide">
+									<li>Use <span style="font-weight: bold;">WASD</span>/arrow keys/swipe to move around.</li>
+									<li>Navigate through the maze to stay alive.</li>
+									<li>Time the turns according to speed of the snake.</li>
+									<li>Clear the maze to increase level.</li>
+								</ol>
+							</div>
+						</div>
+						<div class="game-arena-display">
+							<div class="dummy"></div>
+						</div>
+					</div>
+					<div class="game-indicator">
+						<div class="progress-bar"></div>
+					</div>
+					<div class="game-info">
+						<div class="message"></div>
+					</div>
+				</div>
+
+				<div class="leaderboard"></div>
+			</div>
+
+			<div class="body-column">
+				<div class="game-actions">
+					<div class="desktop-message"></div>
+					<div class="buttons">
+						<div class="button play-pause"><button></button></div>
+						<div class="button reset"><button disabled>Reset</button></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="assets/data/maze-coordinates.js"></script>
+		<script src="src/script.js"></script>
+	</body>
+</html>
