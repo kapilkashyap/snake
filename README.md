@@ -1,9 +1,10 @@
 # snake
  An attempt at revamping the game of snake!
  
- - Has Classic/Challenge/Maze modes
- - You can choose any of the 3 modes to play
+ - Has 3 modes to choose from - Classic/Challenge/Maze
  - Each mode has levels
- - Complete challenges of a level in a mode to unlock new levels
+ - Complete challenges of each level to unlock new levels within a mode
  
- Enjoy! :)
+ You can play the game here - https://kapilkashyap.github.io/snake/play.html
+ 
+ Hope you like the game! :)
