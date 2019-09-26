@@ -43,6 +43,17 @@
     var unlockedModes=['classic', 'challenge', 'maze'];
     var selectedMode='classic';
 
+    // SWIPE VARIABLES
+    var startX;
+    var startY;
+    var distX;
+    var distY;
+    var elapsedTime;
+    var startTime;
+    var threshold=25; //required min distance traveled to be considered swipe
+    var restraint=100; // maximum distance allowed at the same time in perpendicular direction
+    var allowedTime=300; // maximum time allowed to travel that distance
+
     // GAME CONFIG
     var gameState;
     var levelUpPeriod;
@@ -137,78 +148,29 @@
             document.addEventListener("keydown", function (event) {
                 event.stopPropagation();
                 if(!directionChanged) {
-                    if ((event.keyCode===38 || event.keyCode===87) && direction!=="south" && direction!=="north") { //north 
-                        addEntity([row, column], (direction==="east" ? "se" : (direction==="west" ? "sw" : "")));
-                        direction="north";
-                        directionChanged=true;
-                        return;
+                    if(event.keyCode===38 || event.keyCode===87) {
+                        handleDirectionChange("north");
                     }
-                    else if ((event.keyCode===39 || event.keyCode===68) && direction!=="west" && direction!=="east") { //east
-                        addEntity([row, column], (direction==="south" ? "sw" : (direction==="north" ? "nw" : "")));
-                        direction="east";
-                        directionChanged=true;
-                        return;
+                    else if(event.keyCode===39 || event.keyCode===68) {
+                        handleDirectionChange("east");
                     }
-                    else if ((event.keyCode===40 || event.keyCode===83) && direction!=="north" && direction!=="south") { //south
-                        addEntity([row, column], (direction==="east" ? "ne" : (direction==="west" ? "nw" : "")));
-                        direction="south";
-                        directionChanged=true;
-                        return;
+                    else if(event.keyCode===40 || event.keyCode===83) {
+                        handleDirectionChange("south");
                     }
-                    else if ((event.keyCode===37 || event.keyCode===65) && direction!=="east" && direction!=="west") { //west
-                        addEntity([row, column], (direction==="south" ? "se" : (direction==="north" ? "ne" : "")));
-                        direction="west";
-                        directionChanged=true;
-                        return;
+                    else if(event.keyCode===37 || event.keyCode===65) {
+                        handleDirectionChange("west");
                     }
+                    event.preventDefault();
                 }
 
                 if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
-                    updateRowColumnDirection();
-                    updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
-                    speed=calculateSpeed();
-                    setSpeedInterval();
-                    setTimer();
-                    setScorer();
-                    if (gameState===undefined) {
-                        updateLife(true);
-                        generateFood();
-                    }
-                    snakeLength=getDefaultSnakeLength();
-                    gameState="play";
-                    updateMessage(messages.PAUSE);
-                    hideInstructions();
+                    playEventHandler();
                 }
                 else if (event.keyCode===32 && gameState!=="over") {
-                    if (gameState!=="paused" && gameState!=="lifeLost") {
-                        interval=clearInterval(interval);
-                        timerInterval=clearInterval(timerInterval);
-                        scoreInterval=clearInterval(scoreInterval);
-                        flickerInterval=clearInterval(flickerInterval);
-                        gameState="paused";
-                        updateMessage(messages.RESUME);
-                    }
-                    else if (gameState==="paused" || gameState==="lifeLost") {
-                        if (gameState==="lifeLost") {
-                            !isMazeMode() && clearNodes();
-                            defaultSettings();
-                            generateFood();
-                        }
-                        setSpeedInterval();
-                        setTimer();
-                        setScorer();
-                        gameState="play";
-                        updateMessage(messages.PAUSE);
-                    }
+                    pauseEventHandler();
                 }
                 else if (event.keyCode===82 && interval===undefined) { //reset
-                    gameState="over";
-                    clearNodes();
-                    updateLife();
-                    defaultSettings();
-                    updateMessage(messages.START);
-                    hideInstructions(false);
-                    resetGameProgress();
+                    resetEventHandler();
                 }
             });
         }
@@ -216,49 +178,8 @@
             document.querySelector(".game-actions").classList.remove("hide");
             updateActionButtonLabel();
 
-            var swipedir;
-            var startX;
-            var startY;
-            var distX;
-            var distY;
-            var elapsedTime;
-            var startTime;
-            var threshold=25; //required min distance traveled to be considered swipe
-            var restraint=100; // maximum distance allowed at the same time in perpendicular direction
-            var allowedTime=300; // maximum time allowed to travel that distance
-
-            var handleswipe = function(swipedir) {
-                if(!directionChanged) {
-                    if (swipedir==="up" && direction!=="south" && direction!=="north") { //north 
-                        addEntity([row, column], (direction==="east" ? "se" : (direction==="west" ? "sw" : "")));
-                        direction="north";
-                        directionChanged=true;
-                        return;
-                    }
-                    else if (swipedir==="right" && direction!=="west" && direction!=="east") { //east
-                        addEntity([row, column], (direction==="south" ? "sw" : (direction==="north" ? "nw" : "")));
-                        direction="east";
-                        directionChanged=true;
-                        return;
-                    }
-                    else if (swipedir==="down" && direction!=="north" && direction!=="south") { //south
-                        addEntity([row, column], (direction==="east" ? "ne" : (direction==="west" ? "nw" : "")));
-                        direction="south";
-                        directionChanged=true;
-                        return;
-                    }
-                    else if (swipedir==="left" && direction!=="east" && direction!=="west") { //west
-                        addEntity([row, column], (direction==="south" ? "se" : (direction==="north" ? "ne" : "")));
-                        direction="west";
-                        directionChanged=true;
-                        return;
-                    }
-                }
-            };
-
             document.addEventListener("touchstart", function(event) {
                 var touchobj = event.changedTouches[0];
-                swipedir = 'none';
                 dist = 0;
                 startX = touchobj.pageX;
                 startY = touchobj.pageY;
@@ -271,19 +192,20 @@
             }, { passive: false });
 
             document.addEventListener("touchend", function(event) {
+                var _swipeDirection;
                 var touchobj = event.changedTouches[0];
                 distX = touchobj.pageX - startX; // get horizontal dist traveled by finger while in contact with surface
                 distY = touchobj.pageY - startY; // get vertical dist traveled by finger while in contact with surface
                 elapsedTime = new Date().getTime() - startTime; // get time elapsed
                 if (elapsedTime <= allowedTime) { // first condition for swipe met
                     if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint){ // 2nd condition for horizontal swipe met
-                        swipedir = (distX < 0)? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
+                        _swipeDirection = (distX < 0)? "west" : "east"; // if dist traveled is negative, it indicates left swipe
                     }
                     else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for vertical swipe met
-                        swipedir = (distY < 0)? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
+                        _swipeDirection = (distY < 0)? "north" : "south"; // if dist traveled is negative, it indicates up swipe
                     }
+                    handleDirectionChange(_swipeDirection||"north");
                 }
-                handleswipe(swipedir);
                 event.preventDefault();
             }, { passive: false });
         }
@@ -294,46 +216,10 @@
 
             disableResetButton();
             if (gameState==="stopped" || gameState===undefined) {
-                updateRowColumnDirection();
-                updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
-                speed=calculateSpeed();
-                setSpeedInterval();
-                setTimer();
-                setScorer();
-                if (gameState===undefined) {
-                    updateLife(true);
-                    generateFood();
-                }
-                gameState="play";
-                updateMessage(messages.PAUSE);
-                hideInstructions();
-                updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
+                playEventHandler();
             }
             else if (gameState!=="over") {
-                if (gameState!=="paused" && gameState!=="lifeLost") {
-                    interval=clearInterval(interval);
-                    timerInterval=clearInterval(timerInterval);
-                    scoreInterval=clearInterval(scoreInterval);
-                    flickerInterval=clearInterval(flickerInterval);
-                    gameState="paused";
-                    updateMessage(messages.RESUME);
-                    updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
-                    disableResetButton(false);
-                }
-                else if (gameState==="paused" || gameState==="lifeLost") {
-                    disableResetButton();
-                    if (gameState==="lifeLost") {
-                        !isMazeMode() && clearNodes();
-                        defaultSettings();
-                        generateFood();
-                    }
-                    setSpeedInterval();
-                    setTimer();
-                    setScorer();
-                    gameState="play";
-                    updateMessage(messages.PAUSE);
-                    updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
-                }
+                pauseEventHandler();
             }
         }, { passive: false });
 
@@ -346,18 +232,98 @@
             }
 
             if (interval===undefined) { //reset
-                gameState="over";
-                clearNodes();
-                updateLife();
-                defaultSettings();
-                updateMessage(messages.START);
-                hideInstructions(false);
-                toggleHide("play-pause");
-                updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
-                disableResetButton();
-                resetGameProgress();
+                resetEventHandler();
             }
         }, { passive: false });
+    };
+
+    var handleDirectionChange = function(_swipeDirection) {
+        if(!directionChanged) {
+            if (_swipeDirection==="north" && direction!=="south" && direction!=="north") { //north 
+                addEntity([row, column], (direction==="east" ? "se" : (direction==="west" ? "sw" : "")));
+                direction="north";
+                directionChanged=true;
+            }
+            else if (_swipeDirection==="east" && direction!=="west" && direction!=="east") { //east
+                addEntity([row, column], (direction==="south" ? "sw" : (direction==="north" ? "nw" : "")));
+                direction="east";
+                directionChanged=true;
+            }
+            else if (_swipeDirection==="south" && direction!=="north" && direction!=="south") { //south
+                addEntity([row, column], (direction==="east" ? "ne" : (direction==="west" ? "nw" : "")));
+                direction="south";
+                directionChanged=true;
+            }
+            else if (_swipeDirection==="west" && direction!=="east" && direction!=="west") { //west
+                addEntity([row, column], (direction==="south" ? "se" : (direction==="north" ? "ne" : "")));
+                direction="west";
+                directionChanged=true;
+            }
+        }
+    };
+
+    var playEventHandler = function() {
+        updateRowColumnDirection();
+        updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
+        speed=calculateSpeed();
+        setSpeedInterval();
+        setTimer();
+        setScorer();
+        if (gameState===undefined) {
+            updateLife(true);
+            generateFood();
+        }
+        snakeLength=getDefaultSnakeLength();
+        gameState="play";
+        updateMessage(messages.PAUSE);
+        hideInstructions();
+        isPortableMode && updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
+    };
+
+    var pauseEventHandler = function() {
+        if (gameState!=="paused" && gameState!=="lifeLost") {
+            interval=clearInterval(interval);
+            timerInterval=clearInterval(timerInterval);
+            scoreInterval=clearInterval(scoreInterval);
+            flickerInterval=clearInterval(flickerInterval);
+            gameState="paused";
+            updateMessage(messages.RESUME);
+            if(isPortableMode) {
+                updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
+                disableResetButton(false);
+            }
+        }
+        else if (gameState==="paused" || gameState==="lifeLost") {
+            if (gameState==="lifeLost") {
+                !isMazeMode() && clearNodes();
+                defaultSettings();
+                generateFood();
+            }
+            setSpeedInterval();
+            setTimer();
+            setScorer();
+            gameState="play";
+            updateMessage(messages.PAUSE);
+            if(isPortableMode) {
+                updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
+                disableResetButton();
+            }
+        }
+    };
+
+    var resetEventHandler = function() {
+        gameState="over";
+        clearNodes();
+        updateLife();
+        defaultSettings();
+        updateMessage(messages.START);
+        hideInstructions(false);
+        resetGameProgress();
+        if(isPortableMode) {
+            toggleHide("play-pause");
+            updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
+            disableResetButton();
+        }
     };
 
     var defaultSettings = function() {
