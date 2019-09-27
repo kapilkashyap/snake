@@ -8,7 +8,7 @@
     var snakeLength=3;
     var snakeLife=3;
     var direction="north";
-    var directionChanged=false;
+    var prevDirection;
 
     // INTERNAL VARIABLES
     var interval;
@@ -55,6 +55,8 @@
     var allowedTime=300; // maximum time allowed to travel that distance
 
     // GAME CONFIG
+    var movesQueue=[];
+    var snakeBodyCurveClass;
     var gameState;
     var levelUpPeriod;
     var maxLevel;
@@ -147,23 +149,20 @@
 
             document.addEventListener("keydown", function (event) {
                 event.stopPropagation();
-                if(!directionChanged) {
-                    if(event.keyCode===38 || event.keyCode===87) {
-                        handleDirectionChange("north");
-                    }
-                    else if(event.keyCode===39 || event.keyCode===68) {
-                        handleDirectionChange("east");
-                    }
-                    else if(event.keyCode===40 || event.keyCode===83) {
-                        handleDirectionChange("south");
-                    }
-                    else if(event.keyCode===37 || event.keyCode===65) {
-                        handleDirectionChange("west");
-                    }
-                    event.preventDefault();
+                event.preventDefault();
+                if(event.keyCode===38 || event.keyCode===87) {
+                    handleDirectionChange("north");
                 }
-
-                if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
+                else if(event.keyCode===39 || event.keyCode===68) {
+                    handleDirectionChange("east");
+                }
+                else if(event.keyCode===40 || event.keyCode===83) {
+                    handleDirectionChange("south");
+                }
+                else if(event.keyCode===37 || event.keyCode===65) {
+                    handleDirectionChange("west");
+                }
+                else if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
                     playEventHandler();
                 }
                 else if (event.keyCode===32 && gameState!=="over") {
@@ -237,34 +236,24 @@
         }, { passive: false });
     };
 
-    var handleDirectionChange = function(_swipeDirection) {
-        if(!directionChanged) {
-            if (_swipeDirection==="north" && direction!=="south" && direction!=="north") { //north 
-                addEntity([row, column], (direction==="east" ? "se" : (direction==="west" ? "sw" : "")));
-                direction="north";
-                directionChanged=true;
-            }
-            else if (_swipeDirection==="east" && direction!=="west" && direction!=="east") { //east
-                addEntity([row, column], (direction==="south" ? "sw" : (direction==="north" ? "nw" : "")));
-                direction="east";
-                directionChanged=true;
-            }
-            else if (_swipeDirection==="south" && direction!=="north" && direction!=="south") { //south
-                addEntity([row, column], (direction==="east" ? "ne" : (direction==="west" ? "nw" : "")));
-                direction="south";
-                directionChanged=true;
-            }
-            else if (_swipeDirection==="west" && direction!=="east" && direction!=="west") { //west
-                addEntity([row, column], (direction==="south" ? "se" : (direction==="north" ? "ne" : "")));
-                direction="west";
-                directionChanged=true;
-            }
+    var handleDirectionChange = function(directionChangedTo) {
+        if (direction!=="south" /*&& direction!=="north"*/ && directionChangedTo==="north") { //north
+            movesQueue.unshift(directionChangedTo);
+        }
+        else if (direction!=="west" /*&& direction!=="east"*/ && directionChangedTo==="east") { //east
+            movesQueue.unshift(directionChangedTo);
+        }
+        else if (direction!=="north" /*&& direction!=="south"*/ && directionChangedTo==="south") { //south
+            movesQueue.unshift(directionChangedTo);
+        }
+        else if (direction!=="east" /*&& direction!=="west"*/ && directionChangedTo==="west") { //west
+            movesQueue.unshift(directionChangedTo);
         }
     };
 
     var playEventHandler = function() {
         updateRowColumnDirection();
-        updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
+        updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
         setSpeed();
         setSpeedInterval();
         setTimer();
@@ -328,7 +317,6 @@
 
     var defaultSettings = function() {
         updateRowColumnDirection();
-        directionChanged=false;
         interval=undefined;
         flickerInterval=clearInterval(flickerInterval);
         meals=[];
@@ -358,10 +346,36 @@
         });
     };
 
+    var applySnakeBodyCurve = function(_directionChangedTo, _prevDirection) {
+        if(_directionChangedTo===_prevDirection) {
+            return;
+        }
+
+        snakeBodyCurveClass=null;
+        if (_directionChangedTo==="north") {
+            snakeBodyCurveClass=_prevDirection==="east" ? "se" : (_prevDirection==="west" ? "sw" : null);
+        }
+        else if (_directionChangedTo==="east") {
+            snakeBodyCurveClass=_prevDirection==="south" ? "sw" : (_prevDirection==="north" ? "nw" : null);
+        }
+        else if (_directionChangedTo==="south") {
+            snakeBodyCurveClass=_prevDirection==="east" ? "ne" : (_prevDirection==="west" ? "nw" : null);
+        }
+        else if (_directionChangedTo==="west") {
+            snakeBodyCurveClass=_prevDirection==="south" ? "se" : (_prevDirection==="north" ? "ne" : null);
+        }
+        snakeBodyCurveClass && addEntity([row, column], snakeBodyCurveClass);
+    };
+
     // INTERVALS
     var setSpeedInterval = function() {
         interval=clearInterval(interval);
         interval=setInterval(function() {
+            if(movesQueue.length>0) {
+                prevDirection=direction;
+                direction=movesQueue.pop();
+                applySnakeBodyCurve(direction, prevDirection);
+            }
             moveSnake(direction);
         }, speed);
     };
@@ -506,7 +520,6 @@
             var mazePathLength=document.querySelectorAll(".maze-path").length;
             gameProgressFactor=maxProgressPercentage/mazePathLength;
         }
-        console.log("gameProgressFactor", gameProgressFactor);
     };
 
     var clearNodes = function() {
@@ -523,6 +536,7 @@
         row=southThreshold;
         column=Math.round(eastThreshold/2);
         direction="north";
+        movesQueue=[];
     };
 
     var updateRowColumnDirection = function() {
@@ -654,6 +668,15 @@
         return true;
     };
 
+    // PERSISTENCE METHODS
+    var persistItem = function(key, value) {
+        localStorage.setItem(key, value);
+    };
+
+    var retrieveItem = function(key) {
+        return localStorage.getItem(key);
+    };
+
     // LOGIC TO GENERATE FOOD
     var generateFood = function() {
         if(isMazeMode()) {
@@ -719,8 +742,8 @@
     var saveGameStats = function() {
         time=time.toFixed(1);
         var timestamp=new Date().getTime();
-        var stats=localStorage.getItem("snake-game-stats");
-        var unlockedLevels=+localStorage.getItem("unlocked" + capitalize(selectedMode) + "Levels");
+        var stats=retrieveItem("snake-game-stats");
+        var unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels");
         var value={
             timestamp, level, score, time, selectedMode
         };
@@ -737,15 +760,15 @@
             else {
                 stats.push(value);
             }
-            localStorage.setItem("snake-game-stats", JSON.stringify(stats));
+            persistItem("snake-game-stats", JSON.stringify(stats));
         }
         else {
-            localStorage.setItem("snake-game-stats", JSON.stringify([value]));
+            persistItem("snake-game-stats", JSON.stringify([value]));
         }
 
         // update unlockedLevels if current level is greater than already stored
         if(level > unlockedLevels) {
-            localStorage.setItem("unlocked" + capitalize(selectedMode) + "Levels", level);
+            persistItem("unlocked" + capitalize(selectedMode) + "Levels", level);
         }
 
         updateLeaderboard();
@@ -758,7 +781,7 @@
     };
 
     var mazeCoordinatesSelector = function() {
-        selectedCoordinates=coordinates[(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level")||1) - 1];
+        selectedCoordinates=coordinates[(+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1) - 1];
         return selectedCoordinates;
     };
 
@@ -860,7 +883,7 @@
 
     // CHALLENGE MODE METHODS
     var predefinedThresholdsForChallengeMode = function() {
-        var selectedLevel=+localStorage.getItem("selected" + capitalize(selectedMode) + "Level")||1;
+        var selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         if(selectedLevel <= 3) {
             return [9,27];
         }
@@ -918,7 +941,7 @@
         document.querySelector('.modes div.selected').classList.remove('selected');
         this.classList.add('selected');
         selectedMode=this.getAttribute("data");
-        localStorage.setItem("selectedMode", selectedMode);
+        persistItem("selectedMode", selectedMode);
         // calculate the max levels possible for selected mode
         maxLevel=calculateLevels();
         // clear the mode levels first
@@ -948,7 +971,7 @@
         event.stopPropagation();
         document.querySelector('.levels div.selected').classList.remove('selected');
         this.classList.add('selected');
-        localStorage.setItem("selected" + capitalize(selectedMode) + "Level", +this.getAttribute("data"));
+        persistItem("selected" + capitalize(selectedMode) + "Level", +this.getAttribute("data"));
         if(isMazeMode()) {
             generateMazePath();
         }
@@ -974,9 +997,9 @@
     };
 
     var updateModes = function() {
-        var unlockedModes=JSON.parse(localStorage.getItem("unlockedModes"))||[selectedMode];
+        var unlockedModes=JSON.parse(retrieveItem("unlockedModes"))||[selectedMode];
 
-        selectedMode=localStorage.getItem("selectedMode")||selectedMode;
+        selectedMode=retrieveItem("selectedMode")||selectedMode;
         document.querySelectorAll(".selectMode .modes .mode").forEach(function(node, index) {
             var modeValue=node.getAttribute("data");
             // proactively remove click event listener and css classes
@@ -1028,8 +1051,8 @@
     };
 
     var updateModeLevels = function() {
-        var selectedLevel=+localStorage.getItem("selected" + capitalize(selectedMode) + "Level")||1;
-        var unlockedLevels=+localStorage.getItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
+        var selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
+        var unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
 
         document.querySelectorAll(".selectLevel .levels .level").forEach(function(node, index) {
             // proactively remove click event listener and css classes
@@ -1072,7 +1095,7 @@
     var updateLeaderboard = function(limit) {
         limit=limit || 3;
         var leaderboard=document.querySelector(".leaderboard");
-        var stats=JSON.parse(localStorage.getItem("snake-game-stats"));
+        var stats=JSON.parse(retrieveItem("snake-game-stats"));
 
         // if stats is not null, then filter stats based on the selected game mode
         if(stats!==null) {
@@ -1127,8 +1150,8 @@
 
         //if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
         if(isMazeMode() && parseInt(gameProgressBar.style.width)===100) {
-            var selectedLevel=+localStorage.getItem("selected" + capitalize(selectedMode) + "Level")||1;
-            var unlockedLevels=+localStorage.getItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
+            var selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
+            var unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
 
             bypassSnakeLife=true;
 
@@ -1165,7 +1188,6 @@
 
     // SNAKE MOVE LOGIC
     var moveSnake = function() {
-        directionChanged=false;
         if(direction==="north") {
             if(nodes.length < snakeLength) {
                 if(row > northThreshold && onValidMazePath([row-1, column])) {
@@ -1411,11 +1433,11 @@
     window.coordinates=null;
 
     // SET UP THE GAME
-    localStorage.setItem("unlockedModes", JSON.stringify(unlockedModes));
+    persistItem("unlockedModes", JSON.stringify(unlockedModes));
 
     // selectedMode is important to be decided first as other calculations are dependent on it
-    selectedMode=localStorage.getItem("selectedMode")||selectedMode;
-    updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
+    selectedMode=retrieveItem("selectedMode")||selectedMode;
+    updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
     maxLevel=calculateLevels();
     setSnakeLength();
 
@@ -1426,6 +1448,6 @@
     updateModeLevels();
     displayModeInstructions();
     updateLeaderboard();
-    
+
     setGameProgressFactor();
 })();
