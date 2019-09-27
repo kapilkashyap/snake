@@ -131,7 +131,7 @@
         row=r;
         column=Math.round(c/2);
         updateGameArenaThresholds(baseThresholds);
-        speed=calculateSpeed();
+        setSpeed();
         levelUpPeriod=calculateLevelUpPeriod();
         updateMessage(messages.START);
         registerKeys();
@@ -187,9 +187,9 @@
                 event.preventDefault();
             }, { passive: false });
 
-            document.addEventListener("touchmove", function(event) {
-                event.preventDefault();
-            }, { passive: false });
+//             document.addEventListener("touchmove", function(event) {
+//                 event.preventDefault();
+//             }, { passive: false });
 
             document.addEventListener("touchend", function(event) {
                 var _swipeDirection;
@@ -204,7 +204,7 @@
                     else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for vertical swipe met
                         _swipeDirection = (distY < 0)? "north" : "south"; // if dist traveled is negative, it indicates up swipe
                     }
-                    handleDirectionChange(_swipeDirection||"north");
+                    handleDirectionChange(_swipeDirection);
                 }
                 event.preventDefault();
             }, { passive: false });
@@ -265,7 +265,7 @@
     var playEventHandler = function() {
         updateRowColumnDirection();
         updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
-        speed=calculateSpeed();
+        setSpeed();
         setSpeedInterval();
         setTimer();
         setScorer();
@@ -273,7 +273,7 @@
             updateLife(true);
             generateFood();
         }
-        snakeLength=getDefaultSnakeLength();
+        setSnakeLength();
         gameState="play";
         updateMessage(messages.PAUSE);
         hideInstructions();
@@ -336,16 +336,16 @@
         if(gameState==="over") {
             gameState=undefined;
             snakeLife=3;
-            snakeLength=getDefaultSnakeLength();
+            setSnakeLength();
             score=0;
             scoreNode.innerText=score;
             time=0.0;
             timerNode.innerText="0s";
-            speed=calculateSpeed();
+            setSpeed();
         }
         else {
             if(!isMazeMode()) {
-                snakeLength=nodes.length + removeNodes.length;
+                setSnakeLength();
             }
         }
 
@@ -410,6 +410,10 @@
         return selectedMode==="maze";
     };
 
+    var setSnakeLength = function(length) {
+        snakeLength=(length || getDefaultSnakeLength());
+    };
+
     var getDefaultSnakeLength = function() {
         return isClassicMode() ? (level===1 ? 3 : levelUpPeriod*(level-1)) : (10+level);
     };
@@ -447,6 +451,10 @@
 
     var toggleHide = function(btn, hide) {
         document.querySelector(".button." + btn).classList[hide ? "add" : "remove"]("hide");
+    };
+
+    var setSpeed = function() {
+        speed=calculateSpeed();
     };
 
     var calculateSpeed = function(lvl) {
@@ -930,7 +938,7 @@
         else {
             clearChallengeModeUI();
         }
-        snakeLength=getDefaultSnakeLength();
+        setSnakeLength();
         updateLeaderboard();
         setGameProgressFactor();
         resetGameProgress();
@@ -947,6 +955,7 @@
         if(isChallengeMode()) {
             updateChallengeModeUI();
         }
+        setSnakeLength();
     };
 
     // SELECTION UI METHODS
@@ -1342,7 +1351,7 @@
 
             if(isClassicMode() && snakeLength % levelUpPeriod===0) {
                 levelNode.innerText=++level;
-                speed=calculateSpeed();
+                setSpeed();
                 if(!checkGameOver(speed)) {
                     inducePause(100);
                 }
@@ -1408,7 +1417,7 @@
     selectedMode=localStorage.getItem("selectedMode")||selectedMode;
     updateLevel(+localStorage.getItem("selected" + capitalize(selectedMode) + "Level") || 1);
     maxLevel=calculateLevels();
-    snakeLength=getDefaultSnakeLength();
+    setSnakeLength();
 
     setupArena();
     addAvailableModes();
