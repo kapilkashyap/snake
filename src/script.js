@@ -237,17 +237,19 @@
     };
 
     var handleDirectionChange = function(directionChangedTo) {
-        if (direction!=="south" /*&& direction!=="north"*/ && directionChangedTo==="north") { //north
-            movesQueue.unshift(directionChangedTo);
-        }
-        else if (direction!=="west" /*&& direction!=="east"*/ && directionChangedTo==="east") { //east
-            movesQueue.unshift(directionChangedTo);
-        }
-        else if (direction!=="north" /*&& direction!=="south"*/ && directionChangedTo==="south") { //south
-            movesQueue.unshift(directionChangedTo);
-        }
-        else if (direction!=="east" /*&& direction!=="west"*/ && directionChangedTo==="west") { //west
-            movesQueue.unshift(directionChangedTo);
+        if (movesQueue[0]!==directionChangedTo) {
+            if (directionChangedTo==="north" && movesQueue[0]!=="south" && direction!=="south") { //north
+                movesQueue.unshift(directionChangedTo);
+            }
+            else if (directionChangedTo==="east" && movesQueue[0]!=="west" && direction!=="west") { //east
+                movesQueue.unshift(directionChangedTo);
+            }
+            else if (directionChangedTo==="south" && movesQueue[0]!=="north" && direction!=="north") { //south
+                movesQueue.unshift(directionChangedTo);
+            }
+            else if (directionChangedTo==="west" && movesQueue[0]!=="east" && direction!=="east") { //west
+                movesQueue.unshift(directionChangedTo);
+            }
         }
     };
 
