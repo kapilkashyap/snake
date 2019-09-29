@@ -21,7 +21,7 @@ html, body {
     display: flex;
     align-items: center;
     padding-left: 5px;
-    font-size: 6px;
+    font-size: 8px;
 }
 .game-container {
     background: transparent;
