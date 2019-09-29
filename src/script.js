@@ -770,7 +770,7 @@
     var saveGameStats = function() {
         time=time.toFixed(1);
         let stats=retrieveItem("snake-game-stats");
-        let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels");
+        let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
         let value={
             "timestamp": (new Date().getTime()),
             "level": level,
@@ -1217,11 +1217,11 @@
             setGameState("over");
             updateLife();
             updateMessage(msg||(messages.GAME_OVER + messages.SPACE + messages.RESET));
-            toggleHide("play-pause", true);
+            isPortableMode && toggleHide("play-pause", true);
             //specific check for maze mode as we want to update the game stats only when maze is completed successfully
             !isMazeMode() && saveGameStats();
         }
-        disableResetButton(false);
+        isPortableMode && disableResetButton(false);
     };
 
     // SNAKE MOVE LOGIC
