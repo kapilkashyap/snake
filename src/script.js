@@ -1180,8 +1180,7 @@
         scoreInterval=clearInterval(scoreInterval);
         induceFlickerEffect(count);
 
-        //if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
-        if(isMazeMode() && parseInt(gameProgressBar.style.width)===100) {
+        if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
             let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
             let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
 
