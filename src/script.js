@@ -1404,7 +1404,7 @@
             removeEntity(currentLocation, "food");
             updateScore();
             generateFood();
-            snakeLength++;
+            snakeLength+=(isChallengeMode()?5:1);
 
             if(isClassicMode() && snakeLength % levelUpPeriod===0) {
                 levelNode.innerText=++level;
