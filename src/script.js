@@ -10,6 +10,7 @@
     let defaultDirection="north";
     let direction=defaultDirection;
     let prevDirection;
+    let prevSnakeLength=0;
 
     // INTERNAL VARIABLES
     let interval;
@@ -336,6 +337,7 @@
             setGameState(); // purposefully setting state to undefined
             snakeLife=3;
             setSnakeLength();
+            prevSnakeLength=0;
             score=0;
             scoreNode.innerText=score;
             time=0.0;
@@ -344,7 +346,10 @@
         }
         else {
             if(!isMazeMode()) {
-                setSnakeLength(nodes.length + removeNodes.length);
+                if(prevSnakeLength < nodes.length+removeNodes.length) {
+                    prevSnakeLength=nodes.length+removeNodes.length;
+                }
+                setSnakeLength(prevSnakeLength);
             }
         }
 
