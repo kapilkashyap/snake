@@ -46,6 +46,7 @@
     let selectedMode='classic';
 
     // TOUCH EVENT VARIABLES
+    let isGesture=false;
     let startX;
     let startY;
     let startTime;
@@ -178,42 +179,45 @@
                 startY=touchobj.pageY;
                 // record time when finger first makes contact with surface
                 startTime=new Date().getTime();
+                isGesture=true;
                 event.preventDefault();
             }, { passive: false });
 
-//             document.addEventListener("touchmove", function(event) {
-//                 event.preventDefault();
-//             }, { passive: false });
-
             document.addEventListener("touchend", function(event) {
-                let distX;
-                let distY;
-                let elapsedTime;
-                let swipeDirection;
-                let threshold=25; //required min distance traveled to be considered swipe
-                let restraint=100; // maximum distance allowed at the same time in perpendicular direction
-                let allowedTime=300; // maximum time allowed to travel that distance
-                let touchobj=event.changedTouches[0];
+                if(isGesture) {
+                    let distX;
+                    let distY;
+                    let elapsedTime;
+                    let swipeDirection;
+                    let threshold=25; //required min distance traveled to be considered swipe
+                    let restraint=100; // maximum distance allowed at the same time in perpendicular direction
+                    let allowedTime=300; // maximum time allowed to travel that distance
+                    let touchobj=event.changedTouches[0];
 
-                // get horizontal dist traveled by finger while in contact with surface
-                distX=touchobj.pageX - startX;
-                // get vertical dist traveled by finger while in contact with surface
-                distY=touchobj.pageY - startY;
-                // get time elapsed
-                elapsedTime=new Date().getTime() - startTime;
-                // first condition for swipe met
-                if (elapsedTime <= allowedTime) {
-                    // 2nd condition for horizontal swipe met
-                    if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint) {
-                        // if dist traveled is negative, it indicates left swipe
-                        swipeDirection=(distX < 0)? "west" : "east";
+                    // get horizontal dist traveled by finger while in contact with surface
+                    distX=touchobj.pageX - startX;
+                    // get vertical dist traveled by finger while in contact with surface
+                    distY=touchobj.pageY - startY;
+                    // get time elapsed
+                    elapsedTime=new Date().getTime() - startTime;
+                    // first condition for swipe met
+                    if (elapsedTime <= allowedTime) {
+                        // 2nd condition for horizontal swipe met
+                        if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint) {
+                            // if dist traveled is negative, it indicates left swipe
+                            swipeDirection=(distX < 0)? "west" : "east";
+                        }
+                        // 2nd condition for vertical swipe met
+                        else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint) {
+                            // if dist traveled is negative, it indicates up swipe
+                            swipeDirection=(distY < 0)? "north" : "south";
+                        }
+                        handleDirectionChange(swipeDirection);
                     }
-                    // 2nd condition for vertical swipe met
-                    else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint) {
-                        // if dist traveled is negative, it indicates up swipe
-                        swipeDirection=(distY < 0)? "north" : "south";
-                    }
-                    handleDirectionChange(swipeDirection);
+//                     else {
+//                         handleGesture(determineGesture());
+//                     }
+                    isGesture=false;
                 }
                 event.preventDefault();
             }, { passive: false });
@@ -247,7 +251,7 @@
     };
 
     var handleDirectionChange = function(directionChangedTo) {
-        if (movesQueue[0]!==directionChangedTo) {
+        if (gameState==="play" && movesQueue[0]!==directionChangedTo) {
             if (directionChangedTo==="north" && movesQueue[0]!=="south" && direction!=="south") { //north
                 movesQueue.unshift(directionChangedTo);
             }
@@ -337,7 +341,6 @@
             setGameState(); // purposefully setting state to undefined
             snakeLife=3;
             setSnakeLength();
-            prevSnakeLength=0;
             score=0;
             scoreNode.innerText=score;
             time=0.0;
@@ -347,9 +350,8 @@
         else {
             if(!isMazeMode()) {
                 if(prevSnakeLength < nodes.length+removeNodes.length) {
-                    prevSnakeLength=nodes.length+removeNodes.length;
+                    setSnakeLength(nodes.length+removeNodes.length);
                 }
-                setSnakeLength(prevSnakeLength);
             }
         }
 
@@ -452,6 +454,7 @@
 
     var setSnakeLength = function(length) {
         snakeLength=(length || getDefaultSnakeLength());
+        prevSnakeLength=snakeLength;
     };
 
     var getDefaultSnakeLength = function() {
@@ -1396,6 +1399,19 @@
         isMazeMode() && mazePathTraversed++;    
     };
 
+    var triggerLevelUp = function() {
+        let levelUpValueNode=document.querySelector(".level .value");
+        let lvlUpPixel=1.9;
+        levelUpInterval=setInterval(function() {
+            lvlUpPixel+=.1;
+            levelUpValueNode.style.background="repeating-radial-gradient(orange, transparent " + lvlUpPixel + "px)";
+            if(lvlUpPixel>15) {
+                levelUpValueNode.style.background="";
+                clearInterval(levelUpInterval);
+            }
+        }, 20);
+    };
+
     // LOGIC TO UPDATE THE STATE OF GAME
     var updateGameStatus = function() {
         let mealIndex;
@@ -1415,6 +1431,7 @@
                 setSpeed();
                 if(!checkGameOver(speed)) {
                     inducePause(100);
+                    triggerLevelUp();
                 }
                 else {
                     levelNode.innerText=level;
