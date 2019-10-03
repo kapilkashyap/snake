@@ -126,8 +126,6 @@
         }
 
         // set global variables
-        row=r;
-        column=Math.round(c/2);
         updateGameArenaThresholds(baseThresholds);
         setSpeed();
         levelUpPeriod=calculateLevelUpPeriod();
@@ -400,7 +398,6 @@
         interval=setInterval(function() {
             if(movesQueue.length>0) {
                 prevDirection=direction;
-                //direction=movesQueue.pop();
                 setDirection(movesQueue.pop());
                 applySnakeBodyCurve(direction);
             }
@@ -565,7 +562,8 @@
 
     var setRowColumnDirection = function() {
         row=southThreshold;
-        column=Math.round((eastThreshold+westThreshold)/2);
+        //column=Math.round((eastThreshold+westThreshold)/2);
+        column=westThreshold;
         setDirection(defaultDirection);
         movesQueue=[];
     };
@@ -585,7 +583,6 @@
             data=startingNode.getAttribute("data").split(",");
             row=+data[0];
             column=+data[1];
-            //direction=startingNode.getAttribute("direction");
             setDirection(startingNode.getAttribute("direction"));
 
             if(direction==="north") {
