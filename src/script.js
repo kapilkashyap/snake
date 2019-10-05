@@ -57,10 +57,12 @@
     let elapsedTime;
     let swipeDirection;
     let swipeAngle;
+    let swipeAngleMinThreshold;
+    let swipeAngleMaxThreshold;
     let thresholdPassed=false;
     let swipeThreshold=25; //required minimum distance traveled to be considered swipe
-    let swipeAngleMinThreshold=27; //minimum restraint for a right angled movement
-    let swipeAngleMaxThreshold=63; //maximum restraint for a right angled movement
+    let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right angled movement
+    let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right angled movement
     let allowedTime=300; //maximum time allowed to travel that distance
 
     // GAME CONFIG
@@ -536,6 +538,11 @@
 
     var updateActionButtonLabel = function(lbl) {
         document.querySelector(".button.play-pause button").innerHTML=lbl||messages.PLAY_BUTTON_LABEL;
+    };
+
+    var updateSwipeAngleThresholds = function() {
+        swipeAngleMinThreshold=isMazeMode()?45:defaultSwipeAngleMinThreshold;
+        swipeAngleMaxThreshold=isMazeMode()?45:defaultSwipeAngleMaxThreshold;
     };
 
     var disableResetButton = function(isDisabled) {
@@ -1051,6 +1058,7 @@
         updateLeaderboard();
         setGameProgressFactor();
         resetGameProgress();
+        updateSwipeAngleThresholds();
     };
 
     var levelSelectionEventHandler = function(event) {
@@ -1555,6 +1563,6 @@
     updateModeLevels();
     displayModeInstructions();
     updateLeaderboard();
-
+    updateSwipeAngleThresholds();
     setGameProgressFactor();
 })();
