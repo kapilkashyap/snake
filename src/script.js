@@ -49,7 +49,19 @@
     let isGesture=false;
     let startX;
     let startY;
+    let endX;
+    let endY;
+    let deltaX;
+    let deltaY;
     let startTime;
+    let elapsedTime;
+    let swipeDirection;
+    let swipeAngle;
+    let thresholdPassed=false;
+    let swipeThreshold=25; //required minimum distance traveled to be considered swipe
+    let swipeAngleMinThreshold=27; //minimum restraint for a right angled movement
+    let swipeAngleMaxThreshold=63; //maximum restraint for a right angled movement
+    let allowedTime=300; //maximum time allowed to travel that distance
 
     // GAME CONFIG
     let movesQueue=[];
@@ -68,9 +80,9 @@
     let isPortableMode=(function() {
         if( /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent) ) {
             document.body.style.zoom="200%";
-            setTimeout(function() {
-                document.querySelector(".desktop-message").innerHTML=messages.DISCLAIMER;
-            }, 0);
+//             setTimeout(function() {
+//                 document.querySelector(".desktop-message").innerHTML=messages.DISCLAIMER;
+//             }, 0);
             return true;
         }
         return false;
@@ -171,50 +183,80 @@
             document.querySelector(".game-actions").classList.remove("hide");
             updateActionButtonLabel();
 
-            document.addEventListener("touchstart", function(event) {
-                let touchobj=event.changedTouches[0];
-                startX=touchobj.pageX;
-                startY=touchobj.pageY;
+            document.querySelector(".body-container").addEventListener("touchstart", function(event) {
+                let touchObj=event.changedTouches[0];
+                startX=touchObj.pageX;
+                startY=touchObj.pageY;
                 // record time when finger first makes contact with surface
                 startTime=new Date().getTime();
                 isGesture=true;
+                thresholdPassed=false;
                 event.preventDefault();
             }, { passive: false });
 
-            document.addEventListener("touchend", function(event) {
+            document.querySelector(".body-container").addEventListener("touchend", function(event) {
                 if(isGesture) {
-                    let distX;
-                    let distY;
-                    let elapsedTime;
-                    let swipeDirection;
-                    let threshold=25; //required min distance traveled to be considered swipe
-                    let restraint=100; // maximum distance allowed at the same time in perpendicular direction
-                    let allowedTime=300; // maximum time allowed to travel that distance
-                    let touchobj=event.changedTouches[0];
+                    let touchObj=event.changedTouches[0];
+                    endX=touchObj.pageX;
+                    endY=touchObj.pageY;
 
                     // get horizontal dist traveled by finger while in contact with surface
-                    distX=touchobj.pageX - startX;
+                    deltaX=endX - startX;
                     // get vertical dist traveled by finger while in contact with surface
-                    distY=touchobj.pageY - startY;
+                    deltaY=endY - startY;
                     // get time elapsed
                     elapsedTime=new Date().getTime() - startTime;
-                    // first condition for swipe met
+                    // calculate the angle of swipe
+                    swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
+                    thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
                     if (elapsedTime <= allowedTime) {
-                        // 2nd condition for horizontal swipe met
-                        if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint) {
-                            // if dist traveled is negative, it indicates left swipe
-                            swipeDirection=(distX < 0)? "west" : "east";
+                        //  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
+                        if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
+                            if(swipeAngle<swipeAngleMinThreshold) {
+                                swipeDirection=["east"];
+                            }
+                            else if(swipeAngle>swipeAngleMaxThreshold) {
+                                swipeDirection=["north"];
+                            }
+                            else if(thresholdPassed) {
+                                swipeDirection=["east", "north"];
+                            }
                         }
-                        // 2nd condition for vertical swipe met
-                        else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint) {
-                            // if dist traveled is negative, it indicates up swipe
-                            swipeDirection=(distY < 0)? "north" : "south";
+                        else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
+                            if(swipeAngle<swipeAngleMinThreshold) {
+                                swipeDirection=["west"];
+                            }
+                            else if(swipeAngle>swipeAngleMaxThreshold) {
+                                swipeDirection=["north"];
+                            }
+                            else if(thresholdPassed) {
+                                swipeDirection=["west", "north"];
+                            }
                         }
-                        handleDirectionChange(swipeDirection);
+                        else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
+                            if(swipeAngle<swipeAngleMinThreshold) {
+                                swipeDirection=["west"];
+                            }
+                            else if(swipeAngle>swipeAngleMaxThreshold) {
+                                swipeDirection=["south"];
+                            }
+                            else if(thresholdPassed) {
+                                swipeDirection=["west", "south"];
+                            }
+                        }
+                        else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
+                            if(swipeAngle<swipeAngleMinThreshold) {
+                                swipeDirection=["east"];
+                            }
+                            else if(swipeAngle>swipeAngleMaxThreshold) {
+                                swipeDirection=["south"];
+                            }
+                            else if(thresholdPassed) {
+                                swipeDirection=["east", "south"];
+                            }
+                        }
+                        handleGesture(swipeDirection);
                     }
-//                     else {
-//                         handleGesture(determineGesture());
-//                     }
                     isGesture=false;
                 }
                 event.preventDefault();
@@ -246,6 +288,18 @@
                 resetEventHandler();
             }
         }, { passive: false });
+    };
+
+    var handleGesture = function(gesture) {
+        if(gesture.length===2) {
+            // if snake is moving horizontally, swap gesture directions
+            let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
+            movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
+            movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
+        }
+        else {
+            handleDirectionChange(gesture[0]);
+        }
     };
 
     var handleDirectionChange = function(directionChangedTo) {
@@ -1217,7 +1271,7 @@
             updateLife();
             updateMessage(msg||(messages.GAME_OVER + messages.SPACE + messages.RESET));
             isPortableMode && toggleHide("play-pause", true);
-            //specific check for maze mode as we want to update the game stats only when maze is completed successfully
+            // specific check for maze mode as we want to update the game stats only when maze is completed successfully
             !isMazeMode() && saveGameStats();
         }
         isPortableMode && disableResetButton(false);
