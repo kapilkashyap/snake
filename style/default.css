@@ -19,9 +19,9 @@ html, body {
 }
 .desktop-message {
     display: flex;
-    align-items: center;
-    padding-left: 5px;
+    margin-right: 5px;
     font-size: 8px;
+    margin-top: 2px;
 }
 .game-container {
     background: transparent;
@@ -76,6 +76,7 @@ html, body {
     height: 432px;
     flex-wrap: wrap;
     align-content: flex-start;
+    /* background-color: #e2e2e2; */
 }
 .game-arena .instructions {
     width: 400px;
@@ -237,28 +238,28 @@ html, body {
 
 /* styles for rounded borders - start */
 .nw-ne {
-    border-radius: 3px 3px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
 }
 .ne-se {
-    border-radius: 0 3px 3px 0 !important;
+    border-radius: 0 4px 4px 0 !important;
 }
 .se-sw {
-    border-radius: 0 0 3px 3px !important;
+    border-radius: 0 0 4px 4px !important;
 }
 .sw-nw {
-    border-radius: 3px 0 0 3px !important;
+    border-radius: 4px 0 0 4px !important;
 }
 .nw {
-    border-radius: 3px 0 0 0;
+    border-radius: 5px 0 0 0;
 }
 .ne {
-    border-radius: 0 3px 0 0;
+    border-radius: 0 5px 0 0;
 }
 .se {
-    border-radius: 0 0 3px 0;
+    border-radius: 0 0 5px 0;
 }
 .sw {
-    border-radius: 0 0 0 3px;
+    border-radius: 0 0 0 5px;
 }
 /* styles for rounded borders - end */
 
@@ -299,20 +300,25 @@ html, body {
 /* styles for game actions - start */
 .game-actions {
     display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+}
+.game-action-buttons {
+    display: flex;
     justify-content: space-between;
 }
-.game-actions div.buttons {
+.game-action-buttons div.buttons {
     display: flex;
-    font: 1em/1.2 Helvetica, arial, sans-serif;
+    /* font: 1em/1.2 Helvetica, arial, sans-serif; */
 }
-.game-actions div.buttons div.button {
+.game-action-buttons div.buttons div.button {
     margin-right: 5px;
-    margin-bottom: 3px;
+    margin-bottom: 1px;
 }
-.game-actions div.buttons div.play-pause {
+.game-action-buttons div.buttons div.play-pause {
     display: flex;
 }
-.game-actions div.buttons div.reset {
+.game-action-buttons div.buttons div.reset {
     display: flex;
 }
 /* styles for game actions - end */
