@@ -138,10 +138,13 @@ html, body {
     cursor: default !important;
 }
 .game-arena .instructions .tutorial {
-    margin: 10px 0 5px 5px;
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 5px 5px 5px;
     text-decoration: underline;
-    font-size: 10px;
+    font-size: 8px;
     cursor: pointer;
+    color: #888;
 }
 .game-arena .game-arena-display div {
     margin: 1px;
