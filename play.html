@@ -8,6 +8,20 @@
 		<link rel="stylesheet" type="text/css" href="style/default.css" />
 	</head>
 	<body>
+		<div class="tutorial-overlay hide">
+			<div class="image-container">
+				<img id="1" class="hidden" src="assets/tutorial/left-right.png"/>
+				<img id="2" class="hidden" src="assets/tutorial/up-down.png"/>
+				<img id="3" class="hidden" src="assets/tutorial/u-turn.png"/>
+				<img id="4" class="hidden" src="assets/tutorial/lane-switch.png"/>
+			</div>
+			<div class="image-selection">
+				<div class="indicator"></div>
+				<div class="indicator"></div>
+				<div class="indicator"></div>
+				<div class="indicator"></div>
+			</div>
+		</div>
 		<div class="body-container">
 			<div class="body-column">
 				<div class="game-container game-container-dimensions">
@@ -69,6 +83,7 @@
 									<li>Clear the maze to increase level.</li>
 								</ol>
 							</div>
+							<div class="tutorial">Tutorial</div>
 						</div>
 						<div class="game-arena-display">
 							<div class="dummy"></div>

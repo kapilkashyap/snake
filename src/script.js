@@ -152,7 +152,7 @@
             document.querySelectorAll(".life .value span").forEach(function(node) {
                 node.innerHTML="&#9829;";
             });
-
+            document.querySelector(".instructions .tutorial").classList.add("hide");
             document.querySelector(".game-actions").classList.add("hide");
 
             document.addEventListener("keydown", function(event) {
@@ -184,6 +184,44 @@
         else {
             document.querySelector(".game-actions").classList.remove("hide");
             updateActionButtonLabel();
+
+            document.querySelector(".tutorial").addEventListener("touchstart", function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                document.querySelector(".tutorial-overlay").classList.remove("hide");
+                document.querySelector(".image-container img:nth-child(1)").classList.remove("hidden");
+                document.querySelector(".image-selection .indicator:nth-child(1)").style.background="#888";
+            }, {passive: false});
+
+            document.querySelectorAll(".image-container img").forEach(function(el) {
+                let imageSelectionNode = document.querySelector(".image-selection");
+                el.addEventListener("touchstart", function(event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    let id=+this.id;
+                    this.classList.add("hidden");
+                    imageSelectionNode.querySelector(".indicator:nth-child(" + (id) + ")").style.background="";
+                    imageSelectionNode.querySelector(".indicator:nth-child(" + (id===4?1:id+1) + ")").style.background="#888";
+                    if(this.nextElementSibling) {
+                        this.nextElementSibling.classList.remove("hidden");
+                    }
+                    else {
+                        document.querySelector(".image-container img").classList.remove("hidden");
+                    }
+                }, {passive: false});
+            });
+
+            document.querySelector(".tutorial-overlay").addEventListener("touchstart", function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                document.querySelectorAll(".image-container img").forEach(function(el) {
+                    el.classList.add("hidden");
+                });
+                document.querySelectorAll(".image-selection .indicator").forEach(function(el) {
+                    el.style.background="";
+                });
+                this.classList.add("hide");
+            }, {passive: false});
 
             document.querySelector(".body-container").addEventListener("touchstart", function(event) {
                 let touchObj=event.changedTouches[0];
@@ -293,14 +331,16 @@
     };
 
     var handleGesture = function(gesture) {
-        if(gesture.length===2) {
-            // if snake is moving horizontally, swap gesture directions
-            let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
-            movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
-            movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
-        }
-        else {
-            handleDirectionChange(gesture[0]);
+        if(gesture) {
+            if(gesture.length===2) {
+                // if snake is moving horizontally, swap gesture directions
+                let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
+                movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
+                movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
+            }
+            else {
+                handleDirectionChange(gesture[0]);
+            }      
         }
     };
 

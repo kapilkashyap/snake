@@ -137,6 +137,12 @@ html, body {
     opacity: 0.6 !important;
     cursor: default !important;
 }
+.game-arena .instructions .tutorial {
+    margin: 10px 0 5px 5px;
+    text-decoration: underline;
+    font-size: 10px;
+    cursor: pointer;
+}
 .game-arena .game-arena-display div {
     margin: 1px;
     width: 10px;
@@ -343,3 +349,35 @@ html, body {
     width: 0;
 }
 /* styles for game indicators - end */
+
+/* styles for tutorial overlay - start */
+.tutorial-overlay {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    align-items: center;
+    background: #8888;
+    z-index: 1000;
+    flex-direction: column;
+}
+.tutorial-overlay .image-container .hidden {
+    left: -10000px;
+    top: -10000px;
+    position: absolute;
+}
+.tutorial-overlay .image-selection {
+    display: flex;
+    width: 60px;
+    height: 20px;
+    margin-top: -34px;
+    align-items: center;
+    justify-content: space-evenly;
+}
+.tutorial-overlay .image-selection .indicator {
+    border-radius: 10px;
+    width: 6px;
+    height: 6px;
+    background: #e2e2e2;
+}
+/* styles for tutorial overlay - end */
