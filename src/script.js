@@ -92,10 +92,10 @@
 
     // MESSAGES
     let messages={
-        "START": isPortableMode ? "" : "Press space bar to start.",
+        "START": isPortableMode ? "Press play button to start." : "Press space bar to start.",
         "RESET": isPortableMode ? "Press reset button." : "Press 'R' to reset.",
         "PAUSE": isPortableMode ? "" : "Press space bar to pause.",
-        "RESUME": isPortableMode ? "" : "Press space bar to resume.",
+        "RESUME": isPortableMode ? "Press play button to resume." : "Press space bar to resume.",
         "LIVES_REMAINING": "lives remaining!",
         "LIFE_REMAINING": "life remaining!",
         "GAME_OVER": "Game over!",
@@ -326,6 +326,12 @@
 
             if (interval===undefined) { //reset
                 resetEventHandler();
+            }
+        }, { passive: false });
+
+        window.addEventListener("blur", function(event) {
+            if(gameState==="play") {
+                pauseEventHandler();
             }
         }, { passive: false });
     };
