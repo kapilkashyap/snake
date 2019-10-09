@@ -140,11 +140,10 @@ html, body {
 .game-arena .instructions .tutorial {
     display: flex;
     justify-content: flex-end;
-    margin: 10px 5px 5px 5px;
     text-decoration: underline;
-    font-size: 8px;
-    cursor: pointer;
-    color: #888;
+}
+.game-arena .instructions .tutorial div {
+    padding: 10px;
 }
 .game-arena .game-arena-display div {
     margin: 1px;

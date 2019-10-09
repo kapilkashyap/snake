@@ -185,7 +185,7 @@
             document.querySelector(".game-actions").classList.remove("hide");
             updateActionButtonLabel();
 
-            document.querySelector(".tutorial").addEventListener("touchstart", function(event) {
+            document.querySelector(".tutorial div").addEventListener("touchstart", function(event) {
                 event.stopPropagation();
                 event.preventDefault();
                 document.querySelector(".tutorial-overlay").classList.remove("hide");
