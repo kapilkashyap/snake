@@ -7,6 +7,14 @@ html, body {
     height: 100%;
     margin: 0;
 }
+.link {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px;
+}
+.link a {
+    color: #626262;
+}
 .body-container {
     display: flex;
     flex-direction: column;
@@ -347,10 +355,54 @@ html, body {
 .game-indicator div.boost-timeout-bar {
     width: 0;
 }
+.game-indicator div.boost-timeout-bar.default {
+    border-color: #ff0000;
+}
+.game-indicator div.boost-timeout-bar.nitro {
+    border-color: goldenrod;
+}
+.game-indicator div.boost-timeout-bar.one-up {
+    border-color: cornflowerblue;
+}
+.game-indicator div.boost-timeout-bar.timewarp {
+    border-color: lightseagreen;
+}
 .game-indicator div.progress-bar {
     width: 0;
 }
 /* styles for game indicators - end */
+
+/* boost - start */
+.game-arena-display .boost {
+    text-align: center;
+    font-size: 8px;
+    font-weight: 600;
+    margin: 0 !important;
+    width: 12px !important;
+    height: 12px !important;
+    color: #ffffff;
+    padding-top: 1px;
+    box-sizing: border-box;
+}
+.game-arena-display .boost.nitro {
+    background: goldenrod;
+}
+.game-arena-display .boost.nitro::after {
+    content: "N";
+}
+.game-arena-display .boost.one-up {
+    background: cornflowerblue; /*darkcyan*/
+}
+.game-arena-display .boost.one-up::after {
+    content: "+1";
+}
+.game-arena-display .boost.timewarp {
+    background: lightseagreen;
+}
+.game-arena-display .boost.timewarp::after {
+    content: "T";
+}
+/* boost - end */
 
 /* styles for tutorial overlay - start */
 .tutorial-overlay {
