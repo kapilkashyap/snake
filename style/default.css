@@ -86,7 +86,7 @@ html, body {
     height: 432px;
     flex-wrap: wrap;
     align-content: flex-start;
-    /* background-color: #e2e2e2; */
+    background: #ffffff;
 }
 .game-arena .instructions {
     width: 400px;

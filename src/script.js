@@ -11,23 +11,15 @@
     let direction=defaultDirection;
     let prevDirection;
     let prevSnakeLength=0;
-
-    // INTERNAL VARIABLES
-    let interval;
-    let timerInterval;
-    let scoreInterval;
-    let flickerInterval;
-    let nodes=[];
-    let removeNodes=[];
-    let meals=[];
-    let dangers=[];
-    let coordinates;
-    let selectedCoordinates;
+    let rowsCount;
+    let columnsCount;
+    let totalRectsCount;
+    let totalRectsCountChallengeMode;
 
     // SPEED SETTINGS
     let baseTime=440;
     let speedCutOff=40;
-    let classicModeBaseTime=340;//240;
+    let classicModeBaseTime=340;//240
     let classicModeSpeedCutOff=100;//60
     let mazeModeSpeedCutOff=152;
     let reduction=40;
@@ -66,6 +58,16 @@
     let allowedTime=300; //maximum time allowed to travel that distance
 
     // GAME CONFIG
+    let interval;
+    let timerInterval;
+    let scoreInterval;
+    let flickerInterval;
+    let coordinates;
+    let selectedCoordinates;
+    let nodes=[];
+    let removeNodes=[];
+    let meals=[];
+    let dangers=[];
     let movesQueue=[];
     let gameState;
     let levelUpPeriod;
@@ -107,6 +109,7 @@
         "PLAY_BUTTON_LABEL": "Play",
         "PAUSE_BUTTON_LABEL": "Pause",
         "DISCLAIMER": "Works best on desktop.",
+        "EXCLAMATION": "!",
         "COMMA": ", ",
         "SPACE": " "
     };
@@ -120,17 +123,17 @@
         let clone=null;
         let r=1;
         let c=1;
-        let rows=Math.floor(dimensions.height / tileDimension.height);
-        let columns=Math.floor(dimensions.width / tileDimension.width);
-        let rectsCount=columns * rows;
-        baseThresholds=[0,columns];
+        rowsCount=Math.floor(dimensions.height / tileDimension.height);
+        columnsCount=Math.floor(dimensions.width / tileDimension.width);
+        totalRectsCount=columnsCount * rowsCount;
+        baseThresholds=[0,columnsCount];
 
         // clean up
         sampleTile.remove();
 
-        for(let index=0; index < rectsCount; index++) {
-            c=index%columns + 1;
-            if(index >= columns && c===1) {
+        for(let index=0; index < totalRectsCount; index++) {
+            c=index%columnsCount + 1;
+            if(index >= columnsCount && c===1) {
                 r++;
             }
             clone=div.cloneNode();
@@ -494,7 +497,7 @@
     };
 
     // INTERVALS
-    var setSpeedInterval = function() {
+    var setSpeedInterval = function(_speed) {
         // making sure the interval is cleared before setting a new interval
         interval=clearInterval(interval);
         interval=setInterval(function() {
@@ -504,7 +507,7 @@
                 applySnakeBodyCurve(direction);
             }
             moveSnake();
-        }, speed);
+        }, _speed||speed);
     };
 
     var setTimer = function() {
@@ -724,14 +727,28 @@
     var addEntity = function(entry, entityType) {
         let node=nodeSelection(entry);
         if(node) {
-            node.classList.add(entityType);
+            if(Object.prototype.toString.call(entityType)==="[object Array]") {
+                entityType.forEach(function(entity) {
+                    node.classList.add(entity);
+                });
+            }
+            else {
+                node.classList.add(entityType);
+            }
             node.classList.remove("empty");
         }
     };
 
     var removeEntityFromNode = function(node, entityType) {
         if(node) {
-            node.classList.remove(entityType);
+            if(Object.prototype.toString.call(entityType)==="[object Array]") {
+                entityType.forEach(function(entity) {
+                    node.classList.remove(entity);
+                });
+            }
+            else {
+                node.classList.remove(entityType);
+            }
             node.classList.add("empty");
         }
     };
@@ -867,9 +884,9 @@
             });
             return true;
         }
-        if(isChallengeMode()) {
-            return document.querySelectorAll(".game-arena-display div.empty:not(.head)").length===0;
-        }
+//         if(isChallengeMode()) {
+//             return document.querySelectorAll(".game-arena-display div.empty:not(.head)").length===0;
+//         }
         return false;
     };
 
@@ -939,7 +956,7 @@
         clearMazeModeUI();
 
         document.querySelector(".game-arena-display").classList.add("maze-mode");
-        gridDimension=gridDimension || 36;
+        gridDimension=gridDimension || rowsCount;
         mazeCoordinatesSelector();
 
         let dimension=Math.sqrt(selectedCoordinates.length);
@@ -956,7 +973,7 @@
         let mazeCls="maze-path";
         let selectedCoordinatesCount=selectedCoordinates.length;
         let extract = function(coordinateValue) {
-            return ((coordinateValue + 1) * factor) - 1;
+            return Math.round(((coordinateValue + 1) * factor) - 1);
         };
 
         selectedCoordinates.forEach(function(coordinate, index) {
@@ -1023,16 +1040,21 @@
     // CHALLENGE MODE METHODS
     var predefinedThresholdsForChallengeMode = function() {
         let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
+        let challengeLevelCoordinates;
         if(selectedLevel <= 3) {
-            return [9,27];
+            challengeLevelCoordinates=[9,27];
         }
         else if(selectedLevel > 3 && selectedLevel <= 6) {
-            return [6,30];
+            challengeLevelCoordinates=[6,30];
         }
         else if(selectedLevel > 6 && selectedLevel <= 9) {
-            return [3,33];
+            challengeLevelCoordinates=[3,33];
         }
-        return [0,36];
+        else {
+            challengeLevelCoordinates=[0,36];
+        }
+        totalRectsCountChallengeMode=Math.pow(challengeLevelCoordinates.reduce((a,b)=>b-a), 2);
+        return challengeLevelCoordinates;
     };
 
     var updateGameArenaThresholds = function(thresholds) {
@@ -1111,7 +1133,8 @@
         event.stopPropagation();
         document.querySelector('.levels div.selected').classList.remove('selected');
         this.classList.add('selected');
-        persistItem("selected" + capitalize(selectedMode) + "Level", +this.getAttribute("data"));
+        let lvl=+this.getAttribute("data");
+        persistItem("selected" + capitalize(selectedMode) + "Level", lvl);
         if(isMazeMode()) {
             generateMazePath();
         }
@@ -1289,25 +1312,8 @@
         induceFlickerEffect(count);
 
         if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
-            let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
-            let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
-
             bypassSnakeLife=true;
-
-            if(selectedLevel===unlockedLevels && selectedLevel<maxLevel) {
-                msg=messages.CONGRATULATIONS + messages.COMMA
-                    + messages.LEVEL_UNLOCKED + messages.SPACE
-                    + messages.RESET;
-                level++;
-            }
-            else if(selectedLevel < unlockedLevels) {
-                msg=messages.CONGRATULATIONS + messages.SPACE + messages.RESET;
-            }
-            else {
-                msg=messages.AMAZING + messages.COMMA
-                    + messages.ALL_LEVELS_COMPLETED + messages.SPACE
-                    + messages.RESET;
-            }
+            msg=constructMessage();
             // update games stats once the maze is completed successfully
             saveGameStats();
         }
@@ -1347,6 +1353,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
                 // useful for maze-mode
                 if(onValidPath([row, column], onValidPathCls)) {
@@ -1355,6 +1362,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
             else {
@@ -1368,10 +1376,12 @@
                     }
                     else {
                         gameOver(7);
+                        return;
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
         }
@@ -1388,6 +1398,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
                 // useful for maze-mode
                 if(onValidPath([row, column], onValidPathCls)) {
@@ -1396,6 +1407,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
             else {
@@ -1409,10 +1421,12 @@
                     }
                     else {
                         gameOver(7);
+                        return;
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
         }
@@ -1423,12 +1437,13 @@
                         nodes.push([row, ++column]);
                     }
                     else {
-                        column=column+(column > 1 ? 1 : 0);
+                        column=column+(column===eastThreshold ? 0 : 1);
                         nodes.push([row, column]);
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
                 // useful for maze-mode
                 if(onValidPath([row, column], onValidPathCls)) {
@@ -1437,6 +1452,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
             else {
@@ -1450,10 +1466,12 @@
                     }
                     else {
                         gameOver(7);
+                        return;
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
         }
@@ -1464,12 +1482,13 @@
                         nodes.push([row, --column]);
                     }
                     else {
-                        column=column-(column > 1 ? 1 : 0);
+                        column=column-(column===westThreshold ? 0 : 1);
                         nodes.push([row, column]);
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
                 // useful for maze-mode
                 if(onValidPath([row, column], onValidPathCls)) {
@@ -1478,6 +1497,7 @@
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
             else {
@@ -1491,17 +1511,47 @@
                     }
                     else {
                         gameOver(7);
+                        return;
                     }
                 }
                 else {
                     gameOver(7);
+                    return;
                 }
             }
         }
         updateGameStatus();
         updateGameProgress();
         // increment the count of maze path traversed
-        isMazeMode() && mazePathTraversed++;    
+        isMazeMode() && mazePathTraversed++;
+        // increment the count of challenge arena covered
+        if(isChallengeMode()) {
+            if(document.querySelectorAll(".game-arena-display div.path").length===totalRectsCountChallengeMode) {
+                gameOver(10, constructMessage(), true);
+            }
+        }
+    };
+
+    var constructMessage = function() {
+        let msg;
+        let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
+        let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
+
+        if(selectedLevel===unlockedLevels && selectedLevel<maxLevel) {
+            msg=messages.CONGRATULATIONS + messages.COMMA
+                + messages.LEVEL_UNLOCKED + messages.SPACE
+                + messages.RESET;
+            level++;
+        }
+        else if(selectedLevel < unlockedLevels) {
+            msg=messages.CONGRATULATIONS + messages.EXCLAMATION + messages.SPACE + messages.RESET;
+        }
+        else {
+            msg=messages.AMAZING + messages.COMMA
+                + messages.ALL_LEVELS_COMPLETED + messages.SPACE
+                + messages.RESET;
+        }
+        return msg;
     };
 
     var triggerLevelUp = function() {
@@ -1542,9 +1592,6 @@
                     levelNode.innerText=level;
                 }
             }
-            else if(isChallengeMode()) {
-                checkGameOver();
-            }
             return;
         }
 
@@ -1570,7 +1617,7 @@
             return;
         }
         if(isChallengeMode()) {
-            gameProgressBar.style.width=(gameProgressFactor*snakeLength) + "%";
+            gameProgressBar.style.width=(gameProgressFactor*document.querySelectorAll(".game-arena-display div.path").length) + "%";
             return;
         }
         if(isMazeMode()) {
@@ -1589,26 +1636,41 @@
         }
     };
 
-    // CLEAN-UP GLOBALS
-    coordinates=window.coordinates["12x12"];
-    window.coordinates=null;
-
     // SET UP THE GAME
-    persistItem("unlockedModes", JSON.stringify(unlockedModes));
+	var init = function() {
+		persistItem("unlockedModes", JSON.stringify(unlockedModes));
+		// selectedMode is important to be decided first as other calculations are dependent on it
+		selectedMode=retrieveItem("selectedMode")||selectedMode;
+		updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
+		calculateMaxLevels();
+		setSnakeLength();
+		setupArena();
+		addAvailableModes();
+		updateModes();
+		addModeLevels();
+		updateModeLevels();
+		displayModeInstructions();
+		updateLeaderboard();
+		updateSwipeAngleThresholds();
+		setGameProgressFactor();
+	};
 
-    // selectedMode is important to be decided first as other calculations are dependent on it
-    selectedMode=retrieveItem("selectedMode")||selectedMode;
-    updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
-    calculateMaxLevels();
-    setSnakeLength();
+    // predefined set of 12x12 dimension Hamiltonian paths for the maze mode
+	coordinates=[
+        [[1,7],[2,7],[2,8],[2,9],[3,9],[3,10],[4,10],[4,9],[4,8],[3,8],[3,7],[3,6],[4,6],[4,7],[5,7],[5,8],[5,9],[5,10],[5,11],[6,11],[7,11],[8,11],[9,11],[9,10],[10,10],[10,11],[11,11],[11,10],[11,9],[10,9],[9,9],[9,8],[8,8],[8,7],[8,6],[7,6],[7,7],[7,8],[7,9],[8,9],[8,10],[7,10],[6,10],[6,9],[6,8],[6,7],[6,6],[5,6],[5,5],[6,5],[6,4],[6,3],[7,3],[8,3],[8,4],[7,4],[7,5],[8,5],[9,5],[9,6],[9,7],[10,7],[10,8],[11,8],[11,7],[11,6],[10,6],[10,5],[11,5],[11,4],[10,4],[9,4],[9,3],[10,3],[11,3],[11,2],[10,2],[9,2],[9,1],[10,1],[11,1],[11,0],[10,0],[9,0],[8,0],[7,0],[7,1],[8,1],[8,2],[7,2],[6,2],[6,1],[6,0],[5,0],[4,0],[3,0],[3,1],[4,1],[5,1],[5,2],[4,2],[3,2],[2,2],[1,2],[1,1],[2,1],[2,0],[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,5],[1,4],[1,3],[2,3],[2,4],[3,4],[3,3],[4,3],[5,3],[5,4],[4,4],[4,5],[3,5],[2,5],[2,6],[1,6],[0,6],[0,7],[0,8],[1,8],[1,9],[0,9],[0,10],[0,11],[1,11],[1,10],[2,10],[2,11],[3,11],[4,11]],
+        [[9,1],[10,1],[10,2],[11,2],[11,1],[11,0],[10,0],[9,0],[8,0],[7,0],[6,0],[5,0],[5,1],[6,1],[6,2],[5,2],[4,2],[4,3],[3,3],[3,2],[3,1],[4,1],[4,0],[3,0],[2,0],[2,1],[1,1],[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,6],[1,7],[0,7],[0,8],[0,9],[1,9],[1,8],[2,8],[2,9],[2,10],[1,10],[0,10],[0,11],[1,11],[2,11],[3,11],[3,10],[4,10],[4,11],[5,11],[5,10],[6,10],[6,11],[7,11],[8,11],[9,11],[9,10],[9,9],[8,9],[8,10],[7,10],[7,9],[6,9],[5,9],[5,8],[6,8],[7,8],[7,7],[6,7],[5,7],[5,6],[5,5],[4,5],[4,6],[4,7],[4,8],[4,9],[3,9],[3,8],[3,7],[2,7],[2,6],[3,6],[3,5],[2,5],[1,5],[1,4],[1,3],[1,2],[2,2],[2,3],[2,4],[3,4],[4,4],[5,4],[5,3],[6,3],[6,4],[6,5],[6,6],[7,6],[7,5],[7,4],[8,4],[8,3],[7,3],[7,2],[7,1],[8,1],[8,2],[9,2],[9,3],[10,3],[11,3],[11,4],[11,5],[10,5],[10,4],[9,4],[9,5],[8,5],[8,6],[8,7],[8,8],[9,8],[10,8],[10,9],[10,10],[10,11],[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[10,6],[10,7],[9,7],[9,6]],
+        [[1,11],[0,11],[0,10],[0,9],[0,8],[0,7],[0,6],[0,5],[0,4],[0,3],[0,2],[0,1],[0,0],[1,0],[2,0],[3,0],[3,1],[4,1],[4,0],[5,0],[5,1],[5,2],[4,2],[3,2],[2,2],[2,1],[1,1],[1,2],[1,3],[2,3],[3,3],[4,3],[5,3],[5,4],[5,5],[5,6],[6,6],[6,5],[7,5],[8,5],[8,4],[7,4],[6,4],[6,3],[6,2],[7,2],[7,3],[8,3],[8,2],[9,2],[10,2],[10,1],[9,1],[8,1],[7,1],[6,1],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[11,1],[11,2],[11,3],[11,4],[11,5],[10,5],[10,4],[10,3],[9,3],[9,4],[9,5],[9,6],[9,7],[8,7],[8,6],[7,6],[7,7],[7,8],[8,8],[9,8],[10,8],[10,7],[10,6],[11,6],[11,7],[11,8],[11,9],[10,9],[10,10],[11,10],[11,11],[10,11],[9,11],[9,10],[9,9],[8,9],[8,10],[8,11],[7,11],[6,11],[5,11],[4,11],[3,11],[2,11],[2,10],[1,10],[1,9],[1,8],[1,7],[1,6],[1,5],[1,4],[2,4],[2,5],[2,6],[2,7],[3,7],[3,8],[2,8],[2,9],[3,9],[3,10],[4,10],[4,9],[4,8],[5,8],[5,9],[5,10],[6,10],[7,10],[7,9],[6,9],[6,8],[6,7],[5,7],[4,7],[4,6],[3,6],[3,5],[4,5],[4,4],[3,4]],
+        [[5,1],[6,1],[7,1],[8,1],[8,2],[9,2],[9,1],[9,0],[8,0],[7,0],[6,0],[5,0],[4,0],[3,0],[2,0],[2,1],[1,1],[1,0],[0,0],[0,1],[0,2],[1,2],[1,3],[0,3],[0,4],[1,4],[1,5],[0,5],[0,6],[0,7],[0,8],[0,9],[0,10],[0,11],[1,11],[2,11],[3,11],[4,11],[5,11],[5,10],[4,10],[4,9],[3,9],[3,10],[2,10],[1,10],[1,9],[2,9],[2,8],[1,8],[1,7],[1,6],[2,6],[2,5],[2,4],[3,4],[3,3],[2,3],[2,2],[3,2],[3,1],[4,1],[4,2],[5,2],[5,3],[4,3],[4,4],[4,5],[3,5],[3,6],[4,6],[5,6],[6,6],[6,5],[5,5],[5,4],[6,4],[6,3],[6,2],[7,2],[7,3],[7,4],[7,5],[8,5],[8,4],[8,3],[9,3],[9,4],[9,5],[10,5],[10,4],[10,3],[10,2],[10,1],[10,0],[11,0],[11,1],[11,2],[11,3],[11,4],[11,5],[11,6],[10,6],[10,7],[11,7],[11,8],[11,9],[11,10],[11,11],[10,11],[9,11],[9,10],[10,10],[10,9],[10,8],[9,8],[9,9],[8,9],[8,8],[8,7],[9,7],[9,6],[8,6],[7,6],[7,7],[7,8],[7,9],[7,10],[8,10],[8,11],[7,11],[6,11],[6,10],[6,9],[5,9],[5,8],[6,8],[6,7],[5,7],[4,7],[4,8],[3,8],[3,7],[2,7]],
+        [[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[10,5],[10,6],[10,7],[10,8],[10,9],[9,9],[9,8],[9,7],[9,6],[9,5],[8,5],[7,5],[7,6],[8,6],[8,7],[7,7],[7,8],[8,8],[8,9],[8,10],[9,10],[10,10],[10,11],[9,11],[8,11],[7,11],[7,10],[7,9],[6,9],[6,10],[6,11],[5,11],[5,10],[5,9],[5,8],[6,8],[6,7],[5,7],[5,6],[6,6],[6,5],[6,4],[7,4],[8,4],[9,4],[9,3],[10,3],[10,4],[11,4],[11,3],[11,2],[11,1],[11,0],[10,0],[9,0],[8,0],[8,1],[9,1],[10,1],[10,2],[9,2],[8,2],[8,3],[7,3],[7,2],[6,2],[6,3],[5,3],[5,2],[4,2],[3,2],[3,1],[4,1],[5,1],[6,1],[7,1],[7,0],[6,0],[5,0],[4,0],[3,0],[2,0],[1,0],[0,0],[0,1],[0,2],[1,2],[1,1],[2,1],[2,2],[2,3],[3,3],[4,3],[4,4],[5,4],[5,5],[4,5],[4,6],[4,7],[4,8],[4,9],[3,9],[2,9],[2,10],[3,10],[4,10],[4,11],[3,11],[2,11],[1,11],[0,11],[0,10],[1,10],[1,9],[0,9],[0,8],[0,7],[0,6],[0,5],[0,4],[0,3],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[2,8],[3,8],[3,7],[2,7],[2,6],[2,5],[2,4],[3,4],[3,5],[3,6]],
+        [[2,2],[3,2],[3,3],[4,3],[4,2],[5,2],[5,3],[6,3],[6,2],[7,2],[7,3],[8,3],[8,2],[9,2],[9,3],[10,3],[10,4],[10,5],[9,5],[9,4],[8,4],[7,4],[6,4],[5,4],[4,4],[3,4],[3,5],[4,5],[5,5],[5,6],[4,6],[4,7],[4,8],[4,9],[4,10],[3,10],[3,11],[4,11],[5,11],[6,11],[6,10],[5,10],[5,9],[5,8],[5,7],[6,7],[7,7],[7,6],[6,6],[6,5],[7,5],[8,5],[8,6],[8,7],[8,8],[7,8],[6,8],[6,9],[7,9],[7,10],[7,11],[8,11],[8,10],[8,9],[9,9],[9,10],[9,11],[10,11],[11,11],[11,10],[10,10],[10,9],[11,9],[11,8],[11,7],[10,7],[10,8],[9,8],[9,7],[9,6],[10,6],[11,6],[11,5],[11,4],[11,3],[11,2],[10,2],[10,1],[11,1],[11,0],[10,0],[9,0],[9,1],[8,1],[8,0],[7,0],[7,1],[6,1],[6,0],[5,0],[5,1],[4,1],[4,0],[3,0],[3,1],[2,1],[2,0],[1,0],[0,0],[0,1],[1,1],[1,2],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[1,7],[2,7],[2,8],[1,8],[0,8],[0,9],[1,9],[1,10],[0,10],[0,11],[1,11],[2,11],[2,10],[2,9],[3,9],[3,8],[3,7],[3,6],[2,6],[1,6],[1,5],[1,4],[1,3],[2,3],[2,4],[2,5]],
+        [[2,0],[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[1,2],[1,1],[2,1],[3,1],[3,0],[4,0],[4,1],[4,2],[3,2],[2,2],[2,3],[3,3],[3,4],[2,4],[2,5],[3,5],[4,5],[4,6],[5,6],[6,6],[6,7],[7,7],[7,6],[7,5],[6,5],[5,5],[5,4],[4,4],[4,3],[5,3],[5,2],[5,1],[5,0],[6,0],[7,0],[8,0],[8,1],[8,2],[8,3],[7,3],[7,2],[7,1],[6,1],[6,2],[6,3],[6,4],[7,4],[8,4],[9,4],[10,4],[10,5],[9,5],[8,5],[8,6],[9,6],[10,6],[10,7],[9,7],[8,7],[8,8],[7,8],[6,8],[5,8],[5,7],[4,7],[3,7],[3,6],[2,6],[2,7],[2,8],[1,8],[1,7],[1,6],[1,5],[0,5],[0,6],[0,7],[0,8],[0,9],[1,9],[2,9],[3,9],[3,8],[4,8],[4,9],[4,10],[3,10],[2,10],[1,10],[0,10],[0,11],[1,11],[2,11],[3,11],[4,11],[5,11],[6,11],[6,10],[5,10],[5,9],[6,9],[7,9],[8,9],[9,9],[9,8],[10,8],[10,9],[10,10],[9,10],[8,10],[7,10],[7,11],[8,11],[9,11],[10,11],[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[11,4],[11,3],[10,3],[9,3],[9,2],[10,2],[11,2],[11,1],[11,0],[10,0],[10,1],[9,1],[9,0]],
+        [[4,2],[4,1],[4,0],[3,0],[2,0],[2,1],[3,1],[3,2],[2,2],[1,2],[1,1],[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[2,3],[2,4],[3,4],[3,3],[4,3],[4,4],[5,4],[6,4],[7,4],[7,5],[8,5],[8,4],[8,3],[7,3],[7,2],[7,1],[6,1],[6,2],[6,3],[5,3],[5,2],[5,1],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[11,1],[11,2],[10,2],[10,1],[9,1],[8,1],[8,2],[9,2],[9,3],[10,3],[11,3],[11,4],[10,4],[9,4],[9,5],[10,5],[11,5],[11,6],[10,6],[9,6],[8,6],[7,6],[7,7],[6,7],[5,7],[5,6],[6,6],[6,5],[5,5],[4,5],[4,6],[4,7],[4,8],[5,8],[5,9],[4,9],[4,10],[5,10],[6,10],[6,9],[6,8],[7,8],[8,8],[8,7],[9,7],[9,8],[10,8],[10,7],[11,7],[11,8],[11,9],[10,9],[9,9],[8,9],[7,9],[7,10],[8,10],[9,10],[10,10],[11,10],[11,11],[10,11],[9,11],[8,11],[7,11],[6,11],[5,11],[4,11],[3,11],[2,11],[2,10],[3,10],[3,9],[2,9],[1,9],[1,8],[2,8],[3,8],[3,7],[2,7],[2,6],[3,6],[3,5],[2,5],[1,5],[0,5],[0,6],[1,6],[1,7],[0,7],[0,8],[0,9],[0,10],[0,11],[1,11],[1,10]],
+        [[1,7],[1,8],[2,8],[2,7],[3,7],[3,8],[3,9],[4,9],[4,8],[4,7],[5,7],[5,6],[4,6],[3,6],[2,6],[2,5],[3,5],[4,5],[4,4],[3,4],[2,4],[1,4],[1,3],[1,2],[1,1],[2,1],[2,2],[2,3],[3,3],[3,2],[3,1],[3,0],[2,0],[1,0],[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,5],[1,6],[0,6],[0,7],[0,8],[0,9],[0,10],[0,11],[1,11],[1,10],[1,9],[2,9],[2,10],[2,11],[3,11],[3,10],[4,10],[4,11],[5,11],[5,10],[5,9],[5,8],[6,8],[6,9],[6,10],[6,11],[7,11],[7,10],[7,9],[8,9],[8,10],[8,11],[9,11],[9,10],[9,9],[10,9],[10,10],[10,11],[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[10,6],[10,7],[10,8],[9,8],[8,8],[7,8],[7,7],[6,7],[6,6],[7,6],[8,6],[8,7],[9,7],[9,6],[9,5],[10,5],[11,5],[11,4],[10,4],[9,4],[9,3],[8,3],[7,3],[7,2],[8,2],[9,2],[9,1],[10,1],[10,2],[10,3],[11,3],[11,2],[11,1],[11,0],[10,0],[9,0],[8,0],[8,1],[7,1],[7,0],[6,0],[5,0],[4,0],[4,1],[4,2],[4,3],[5,3],[5,2],[5,1],[6,1],[6,2],[6,3],[6,4],[5,4],[5,5],[6,5],[7,5],[7,4],[8,4],[8,5]],
+        [[4,10],[3,10],[2,10],[1,10],[1,9],[1,8],[2,8],[2,9],[3,9],[3,8],[4,8],[4,9],[5,9],[5,10],[6,10],[6,9],[6,8],[5,8],[5,7],[4,7],[3,7],[2,7],[1,7],[1,6],[0,6],[0,7],[0,8],[0,9],[0,10],[0,11],[1,11],[2,11],[3,11],[4,11],[5,11],[6,11],[7,11],[8,11],[8,10],[7,10],[7,9],[7,8],[8,8],[8,9],[9,9],[10,9],[10,10],[9,10],[9,11],[10,11],[11,11],[11,10],[11,9],[11,8],[11,7],[10,7],[10,8],[9,8],[9,7],[8,7],[7,7],[6,7],[6,6],[5,6],[4,6],[3,6],[2,6],[2,5],[3,5],[4,5],[5,5],[5,4],[4,4],[3,4],[2,4],[2,3],[1,3],[1,4],[1,5],[0,5],[0,4],[0,3],[0,2],[1,2],[1,1],[0,1],[0,0],[1,0],[2,0],[2,1],[2,2],[3,2],[3,3],[4,3],[4,2],[4,1],[3,1],[3,0],[4,0],[5,0],[5,1],[6,1],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[11,1],[11,2],[11,3],[11,4],[11,5],[11,6],[10,6],[10,5],[10,4],[10,3],[10,2],[10,1],[9,1],[8,1],[7,1],[7,2],[6,2],[5,2],[5,3],[6,3],[7,3],[8,3],[8,2],[9,2],[9,3],[9,4],[9,5],[9,6],[8,6],[7,6],[7,5],[6,5],[6,4],[7,4],[8,4],[8,5]],
+        [[4,0],[5,0],[5,1],[5,2],[5,3],[4,3],[3,3],[3,4],[4,4],[5,4],[5,5],[4,5],[4,6],[5,6],[6,6],[6,7],[7,7],[7,6],[8,6],[8,5],[7,5],[6,5],[6,4],[7,4],[8,4],[8,3],[8,2],[8,1],[7,1],[7,2],[7,3],[6,3],[6,2],[6,1],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[11,1],[10,1],[9,1],[9,2],[10,2],[11,2],[11,3],[10,3],[9,3],[9,4],[9,5],[9,6],[9,7],[8,7],[8,8],[9,8],[9,9],[8,9],[7,9],[7,8],[6,8],[6,9],[6,10],[7,10],[8,10],[9,10],[10,10],[10,9],[10,8],[10,7],[10,6],[10,5],[10,4],[11,4],[11,5],[11,6],[11,7],[11,8],[11,9],[11,10],[11,11],[10,11],[9,11],[8,11],[7,11],[6,11],[5,11],[5,10],[5,9],[5,8],[5,7],[4,7],[3,7],[3,8],[4,8],[4,9],[3,9],[3,10],[4,10],[4,11],[3,11],[2,11],[2,10],[2,9],[1,9],[1,10],[1,11],[0,11],[0,10],[0,9],[0,8],[0,7],[0,6],[0,5],[0,4],[1,4],[1,5],[1,6],[1,7],[1,8],[2,8],[2,7],[2,6],[3,6],[3,5],[2,5],[2,4],[2,3],[1,3],[0,3],[0,2],[1,2],[1,1],[0,1],[0,0],[1,0],[2,0],[3,0],[3,1],[2,1],[2,2],[3,2],[4,2],[4,1]],
+        [[10,10],[9,10],[8,10],[7,10],[7,11],[8,11],[9,11],[10,11],[11,11],[11,10],[11,9],[11,8],[11,7],[11,6],[11,5],[11,4],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[9,9],[9,8],[8,8],[8,9],[7,9],[6,9],[6,10],[6,11],[5,11],[4,11],[4,10],[5,10],[5,9],[4,9],[3,9],[3,10],[3,11],[2,11],[2,10],[1,10],[1,11],[0,11],[0,10],[0,9],[0,8],[1,8],[1,9],[2,9],[2,8],[3,8],[3,7],[3,6],[4,6],[4,7],[4,8],[5,8],[6,8],[7,8],[7,7],[8,7],[9,7],[9,6],[8,6],[8,5],[9,5],[9,4],[8,4],[7,4],[7,5],[7,6],[6,6],[6,7],[5,7],[5,6],[5,5],[6,5],[6,4],[5,4],[5,3],[4,3],[3,3],[3,4],[4,4],[4,5],[3,5],[2,5],[1,5],[1,6],[2,6],[2,7],[1,7],[0,7],[0,6],[0,5],[0,4],[0,3],[0,2],[0,1],[0,0],[1,0],[2,0],[2,1],[1,1],[1,2],[1,3],[1,4],[2,4],[2,3],[2,2],[3,2],[3,1],[3,0],[4,0],[4,1],[4,2],[5,2],[5,1],[6,1],[7,1],[8,1],[8,2],[7,2],[6,2],[6,3],[7,3],[8,3],[9,3],[9,2],[9,1],[10,1],[10,2],[10,3],[11,3],[11,2],[11,1],[11,0],[10,0],[9,0],[8,0],[7,0],[6,0],[5,0]]
+    ];
 
-    setupArena();
-    addAvailableModes();
-    updateModes();
-    addModeLevels();
-    updateModeLevels();
-    displayModeInstructions();
-    updateLeaderboard();
-    updateSwipeAngleThresholds();
-    setGameProgressFactor();
+	// initialize the game
+	init();
 })();
