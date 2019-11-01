@@ -214,7 +214,7 @@ html, body {
     width: 100%;
 }
 .leaderboard .row:nth-child(even) {
-    background-color: #EEEEEE;
+    /* background-color: #EEEEEE; */
 }
 .leaderboard .column {
     text-transform: capitalize;

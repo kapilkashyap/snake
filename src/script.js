@@ -162,16 +162,48 @@
                 event.stopPropagation();
                 event.preventDefault();
                 if(event.keyCode===38 || event.keyCode===87) {
-                    handleDirectionChange("north");
+                    if(event.shiftKey && (direction==="east" || direction==="west")) {
+                        handleDoubleDirectionChange(["north", direction]);
+                    }
+                    else if(event.ctrlKey && (direction==="east" || direction==="west")) {
+                        handleDoubleDirectionChange(["north", direction==="east" ? "west" : "east"]);
+                    }
+                    else {
+                        handleDirectionChange("north");                        
+                    }
                 }
                 else if(event.keyCode===39 || event.keyCode===68) {
-                    handleDirectionChange("east");
+                    if(event.shiftKey && (direction==="north" || direction==="south")) {
+                        handleDoubleDirectionChange(["east", direction]);
+                    }
+                    else if(event.ctrlKey && (direction==="north" || direction==="south")) {
+                        handleDoubleDirectionChange(["east", direction==="north" ? "south" : "north"]);
+                    }
+                    else {
+                        handleDirectionChange("east");
+                    }
                 }
                 else if(event.keyCode===40 || event.keyCode===83) {
-                    handleDirectionChange("south");
+                    if(event.shiftKey && (direction==="east" || direction==="west")) {
+                        handleDoubleDirectionChange(["south", direction]);
+                    }
+                    else if(event.ctrlKey && (direction==="east" || direction==="west")) {
+                        handleDoubleDirectionChange(["south", direction==="east" ? "west" : "east"]);
+                    }
+                    else {
+                        handleDirectionChange("south");
+                    }
                 }
                 else if(event.keyCode===37 || event.keyCode===65) {
-                    handleDirectionChange("west");
+                    if(event.shiftKey && (direction==="north" || direction==="south")) {
+                        handleDoubleDirectionChange(["west", direction]);
+                    }
+                    else if(event.ctrlKey && (direction==="north" || direction==="south")) {
+                        handleDoubleDirectionChange(["west", direction==="north" ? "south" : "north"]);
+                    }
+                    else {
+                        handleDirectionChange("west");
+                    }
                 }
                 else if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
                     playEventHandler();
@@ -353,6 +385,13 @@
         }
     };
 
+    var handleDoubleDirectionChange = function(doubleDirection) {
+        if (gameState==="play" /*&& movesQueue[0]!==doubleDirection[0]*/) {
+            movesQueue.unshift(doubleDirection[0]);
+            movesQueue.unshift(doubleDirection[1]);
+        }
+    };
+
     var handleDirectionChange = function(directionChangedTo) {
         if (gameState==="play" && movesQueue[0]!==directionChangedTo) {
             if (directionChangedTo==="north" && movesQueue[0]!=="south" && direction!=="south") { //north
@@ -375,7 +414,7 @@
         updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
         setSpeed();
         setSpeedInterval();
-        setTimer();
+        // setTimer();
         setScorer();
         if (gameState===undefined) {
             updateLife(true);
@@ -402,13 +441,14 @@
             }
         }
         else if (gameState==="paused" || gameState==="lifeLost") {
+            removeTrail();
             if (gameState==="lifeLost") {
                 !isMazeMode() && clearNodes();
                 defaultSettings();
                 generateFood();
             }
             setSpeedInterval();
-            setTimer();
+            // setTimer();
             setScorer();
             setGameState("play");
             updateMessage(messages.PAUSE);
@@ -432,6 +472,8 @@
             updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
             disableResetButton();
         }
+        removeTrail();
+        removeCrosshair();
     };
 
     var defaultSettings = function() {
@@ -446,8 +488,8 @@
             setSnakeLength();
             score=0;
             scoreNode.innerText=score;
-            time=0.0;
-            timerNode.innerText="0s";
+            // time=0.0;
+            // timerNode.innerText="0s";
             setSpeed();
         }
         else {
@@ -530,14 +572,14 @@
 
     var getDimension = function (node) {
         let style=getComputedStyle(node);
-        let width=parseInt(style.marginLeft) + parseInt(style.marginRight)
-            + parseInt(style.borderLeftWidth) + parseInt(style.borderRightWidth)
-            + parseInt(style.paddingLeft) + parseInt(style.paddingRight)
-            + parseInt(style.width);
-        let height=parseInt(style.marginTop) + parseInt(style.marginBottom)
-            + parseInt(style.borderTopWidth) + parseInt(style.borderBottomWidth)
-            + parseInt(style.paddingTop) + parseInt(style.paddingBottom)
-            + parseInt(style.height);
+        let width=parseFloat(style.marginLeft) + parseFloat(style.marginRight)
+            + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth)
+            + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+            + parseFloat(style.width);
+        let height=parseFloat(style.marginTop) + parseFloat(style.marginBottom)
+            + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth)
+            + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
+            + parseFloat(style.height);
 
         return { width, height };
     };
@@ -565,6 +607,12 @@
 
     var updateScore = function(points) {
         score += (points || 10) * level;
+    };
+
+    var removeTrail = function() {
+        document.querySelectorAll(".game-arena-display div.trail").forEach(function(node) {
+            node.classList.remove("trail");
+        });  
     };
 
     var addLife = function() {
@@ -724,6 +772,21 @@
         return entry && document.querySelector(".rc_" + entry[0] + "_" + entry[1]);
     };
 
+    var addCrosshair = function(entry) {
+        for(let index = 1; index <= columnsCount; index++) {
+            addEntity([entry[0], index], "crosshair");
+        }
+        for(let index = 1; index <= rowsCount; index++) {
+            addEntity([index, entry[1]], "crosshair");
+        }
+    };
+
+    var removeCrosshair = function() {
+        document.querySelectorAll(".crosshair").forEach(function(node) {
+            node.classList.remove("crosshair");
+        });
+    };
+
     var addEntity = function(entry, entityType) {
         let node=nodeSelection(entry);
         if(node) {
@@ -762,8 +825,12 @@
         if(entry!==undefined) {
             let node=nodeSelection(entry);
             if(node) {
-                node.classList.remove("path","head","body","tail","nw","ne","se","sw","nw-ne","ne-se","se-sw","sw-nw");
+                let wasTail=node.classList.contains("tail");
+                node.classList.remove("path","head","body","tail","trail","nw","ne","se","sw","nw-ne","ne-se","se-sw","sw-nw");
                 node.classList.add("empty");
+                if(!isMazeMode() && wasTail && gameState==="play") {
+                    node.classList.add("trail");
+                }
             }
         }
     };
@@ -772,7 +839,7 @@
         for(let node, index=0; index < nodes.length; index++) {
             node=nodeSelection(nodes[index]);
             if(node) {
-                node.classList.remove("empty","head","body","nw-ne","ne-se","se-sw","sw-nw");
+                node.classList.remove("empty","head","body","trail","nw-ne","ne-se","se-sw","sw-nw");
                 node.classList.add("path", index===nodes.length - 1 ? "head" : "body");
                 if(index===0) {
                     node.classList.add("tail");
@@ -842,6 +909,8 @@
             let entry=[+randomCoordinate[0], +randomCoordinate[1]];
             meals.push(entry.toString());
             addEntity(entry, "food");
+            removeCrosshair();
+            addCrosshair(entry);
         }
     };
 
@@ -892,14 +961,14 @@
 
     // LOGIC TO SAVE GAME STATS
     var saveGameStats = function() {
-        time=time.toFixed(1);
+        //time=time.toFixed(1);
         let stats=retrieveItem("snake-game-stats");
         let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
         let value={
             "timestamp": (new Date().getTime()),
             "level": level,
             "score": score,
-            "time": time,
+            //"time": time,
             "selectedMode": selectedMode
         };
 
@@ -1037,21 +1106,46 @@
         });
     };
 
+    var isImmersiveExperienceOn = function() {
+        return document.querySelector("body").classList.contains("dark");
+    };
+
     // CHALLENGE MODE METHODS
     var predefinedThresholdsForChallengeMode = function() {
         let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         let challengeLevelCoordinates;
+        let immersiveExp = isImmersiveExperienceOn();
         if(selectedLevel <= 3) {
-            challengeLevelCoordinates=[9,27];
+            if(immersiveExp) {
+                challengeLevelCoordinates=[12,28];    
+            }
+            else {
+                challengeLevelCoordinates=[9,27];    
+            }
         }
         else if(selectedLevel > 3 && selectedLevel <= 6) {
-            challengeLevelCoordinates=[6,30];
+            if(immersiveExp) {
+                challengeLevelCoordinates=[10,30];
+            }
+            else {
+                challengeLevelCoordinates=[6,30];
+            }
         }
         else if(selectedLevel > 6 && selectedLevel <= 9) {
-            challengeLevelCoordinates=[3,33];
+            if(immersiveExp) {
+                challengeLevelCoordinates=[5,35];
+            }
+            else {
+                challengeLevelCoordinates=[3,33];    
+            }
         }
         else {
-            challengeLevelCoordinates=[0,36];
+            if(immersiveExp) {
+                challengeLevelCoordinates=[0,40];
+            }
+            else {
+                challengeLevelCoordinates=[0,36];    
+            }
         }
         totalRectsCountChallengeMode=Math.pow(challengeLevelCoordinates.reduce((a,b)=>b-a), 2);
         return challengeLevelCoordinates;
@@ -1075,6 +1169,7 @@
         // update game arena limits
         updateGameArenaThresholds(thresholds);
 
+        document.querySelector(".game-arena-display").classList.add("challenge-mode");
         document.querySelectorAll(".empty").forEach(function(node) {
             let coordinate = node.getAttribute("data").split(",");
             if(+coordinate[0] <= thresholds[0] ||
@@ -1094,6 +1189,7 @@
             node.classList.remove("danger");
             node.classList.add("empty");
         });
+        document.querySelector(".game-arena-display").classList.remove("challenge-mode");
     };
 
     // EVENT HANDLERS
@@ -1269,30 +1365,47 @@
 
         // check if we have entries for the selected game mode after filtering
         if(stats && stats.length > 0) {
-            let keys= Object.keys(stats[0]);
+            let keys = Object.keys(stats[0]);
             let leaderBoardRow="<div class='row'>";
-            leaderBoardRow += "<div class='padded'></div>";
+            //leaderBoardRow += "<div class='padded'></div>";
             leaderBoardRow += "<div class='column head'>S.No</div>";
             keys.forEach(function(key, idx) {
-                if(key!=="timestamp") {
+                if(key!=="timestamp" && key!=="time") {
                     leaderBoardRow += "<div class='column head'>" + key + "</div>";
+//                     leaderBoardRow += "<div class='column head'>";
+//                     if(key!=="timestamp") {
+//                         leaderBoardRow += key;
+//                     }
+//                     else {
+//                         leaderBoardRow += "played on";
+//                     }
+//                     leaderBoardRow +=  "</div>";
                 }
             });
-            leaderBoardRow += "<div class='padded'></div>";
+            //leaderBoardRow += "<div class='padded'></div>";
             leaderBoardRow += "</div>";
 
             for(let stat, index=0; index < limit; index++) {
                 stat=stats[index];
                 if(stat) {
                     leaderBoardRow += "<div class='row'>";
-                    leaderBoardRow += "<div class='padded'></div>";
+                    //leaderBoardRow += "<div class='padded'></div>";
                     leaderBoardRow += "<div class='column'>" + (index+1) + ".</div>";
                     keys.forEach(function(key, idx) {
-                        if(key!=="timestamp") {
+                        if(key!=="timestamp" && key!=="time") {
                             leaderBoardRow += "<div class='column'>" + stat[key] + "</div>";
+//                             leaderBoardRow += "<div class='column'>";
+//                             if(key!=="timestamp") {
+//                                 leaderBoardRow += stat[key];
+//                             }
+//                             else {
+//                                 let dt = new Date(stat[key]);
+//                                 leaderBoardRow += dt.getFullYear() + "-" + (dt.getMonth()+1 < 10 ? "0" :  dt.getMonth()+1) + "-" + dt.getDate();
+//                             }
+//                             leaderBoardRow +=  "</div>";
                         }
                     });
-                    leaderBoardRow += "<div class='padded'></div>";
+                    //leaderBoardRow += "<div class='padded'></div>";
                     leaderBoardRow += "</div>";
                 }
             }
@@ -1611,7 +1724,7 @@
 
     // LOGIC FOR UPDATING GAME PROGRESS BAR
     var updateGameProgress = function() {
-        gameProgressBar.style.borderColor="green";
+        gameProgressBar.style.borderColor="#00ff0d"; // green
         if(isClassicMode() && snakeLength > 3) {
             gameProgressBar.style.width=(gameProgressFactor*snakeLength) + "%";
             return;
