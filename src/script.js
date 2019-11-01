@@ -784,6 +784,9 @@
     var removeCrosshair = function() {
         document.querySelectorAll(".crosshair").forEach(function(node) {
             node.classList.remove("crosshair");
+            if(isClassicMode()) {
+                node.classList.add("empty");
+            }
         });
     };
 
