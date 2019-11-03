@@ -66,12 +66,16 @@ html, body {
     border-radius: 10px;
     margin: 0;
 }
+body.portable-device .game-stats div.life span {
+    font-size: 7px;
+}
 .game-stats div.life span {
     margin-right: 2px;
-    color: #bdbdbd;
+    color: transparent;
+    text-shadow: 0 0 0 #9996;
 }
 .game-stats div.life span.available {
-    color: red;
+    text-shadow: 0 0 0 red;
 }
 .game-arena {
     background: #ffffff;

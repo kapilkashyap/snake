@@ -83,7 +83,13 @@
     let timerNode=document.querySelector(".time>.value");
     let isPortableMode=(function() {
         if( /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent) ) {
-            document.body.style.zoom="200%";
+            if( /iPad/i.test(navigator.userAgent) ) {
+                document.body.style.zoom="175%";
+            }
+            else {
+                document.body.style.zoom="200%";
+            }
+            document.body.classList.add("portable-device");
 //             setTimeout(function() {
 //                 document.querySelector(".desktop-message").innerHTML=messages.DISCLAIMER;
 //             }, 0);
@@ -151,10 +157,10 @@
     };
 
     var registerKeys = function() {
+        document.querySelectorAll(".life .value span").forEach(function(node) {
+            node.innerHTML="&#9829;";
+        });
         if(!isPortableMode) {
-            document.querySelectorAll(".life .value span").forEach(function(node) {
-                node.innerHTML="&#9829;";
-            });
             document.querySelector(".instructions .tutorial").classList.add("hide");
             document.querySelector(".game-actions").classList.add("hide");
 
@@ -220,6 +226,8 @@
             document.querySelector(".game-actions").classList.remove("hide");
             updateActionButtonLabel();
 
+            // temporarily disable tutorial
+            document.querySelector(".instructions .tutorial").classList.add("hide");
             document.querySelector(".tutorial div").addEventListener("touchstart", function(event) {
                 event.stopPropagation();
                 event.preventDefault();
@@ -755,6 +763,7 @@
             else if(direction==="west") {
                 column++;
             }
+            startingNode.classList.remove("nw","ne","se","sw","nw-ne","ne-se","se-sw","sw-nw");
         }
         else {
             setRowColumnDirection();
@@ -1429,9 +1438,9 @@
 
         if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
             bypassSnakeLife=true;
-            msg=constructMessage();
             // update games stats once the maze is completed successfully
             saveGameStats();
+            msg=constructMessage();
         }
 
         if(!bypassSnakeLife && snakeLife > 1) {
@@ -1728,6 +1737,7 @@
     // LOGIC FOR UPDATING GAME PROGRESS BAR
     var updateGameProgress = function() {
         gameProgressBar.style.borderColor="#00ff0d"; // green
+        gameProgressBar.style.background="#00ff0d"; // green
         if(isClassicMode() && snakeLength > 3) {
             gameProgressBar.style.width=(gameProgressFactor*snakeLength) + "%";
             return;

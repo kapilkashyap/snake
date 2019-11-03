@@ -1,7 +1,7 @@
 /* styles for game layout - start */
 html .dark, body .dark {
     color: #fffb;
-    background: radial-gradient(circle at 50% 33%, #999, #111);
+    background: radial-gradient(circle at 50% 33%, #999, #222);
 }
 body.dark .link a {
     color: #fff5;
@@ -35,9 +35,7 @@ body.dark .game-arena .instructions .selectLevel .levels .level {
 body.dark .game-arena .instructions .selectMode .mode {
     border: 1px solid #3336;
 }
-body.dark .game-arena .game-arena-display div.crosshair {
-/*     background: #3337; */
-}
+body.dark .game-arena .game-arena-display div.crosshair {/* background: #3337; */}
 body.dark .game-arena .game-arena-display div.crosshair::after {
     content: ".";
     display: flex;
@@ -178,6 +176,17 @@ body.dark .tutorial-overlay .image-selection .indicator {
     background: #888;
 }
 /* styles for tutorial overlay - end */
+
+/* styles for button - start */
+button {
+    background-color: #6669;
+    border-color: #6669;
+    color: #fff9;
+}
+button:disabled {
+    color: #fff3;
+}
+/* styles for button - end */
 
 /* styles for animation effects */
 @keyframes trailpath {
