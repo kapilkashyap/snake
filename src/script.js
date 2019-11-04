@@ -77,6 +77,7 @@
     let gameProgressBar=document.querySelector(".game-indicator .progress-bar");
     let level=1;
     let levelNode=document.querySelector(".level>.value");
+    let incrementLevel=false;
     let score=0;
     let scoreNode=document.querySelector(".score>.value");
     let time=0.0;
@@ -1003,8 +1004,9 @@
         }
 
         // update unlockedLevels if current level is greater than already stored
-        if(level > unlockedLevels) {
-            persistItem("unlocked" + capitalize(selectedMode) + "Levels", level);
+        if(incrementLevel && level === unlockedLevels) {
+            incrementLevel=false;
+            persistItem("unlocked" + capitalize(selectedMode) + "Levels", ++level);
         }
 
         updateLeaderboard();
@@ -1129,10 +1131,10 @@
         let immersiveExp = isImmersiveExperienceOn();
         if(selectedLevel <= 3) {
             if(immersiveExp) {
-                challengeLevelCoordinates=[12,28];    
+                challengeLevelCoordinates=[12,28];
             }
             else {
-                challengeLevelCoordinates=[9,27];    
+                challengeLevelCoordinates=[9,27];
             }
         }
         else if(selectedLevel > 3 && selectedLevel <= 6) {
@@ -1148,7 +1150,7 @@
                 challengeLevelCoordinates=[5,35];
             }
             else {
-                challengeLevelCoordinates=[3,33];    
+                challengeLevelCoordinates=[3,33];
             }
         }
         else {
@@ -1156,7 +1158,7 @@
                 challengeLevelCoordinates=[0,40];
             }
             else {
-                challengeLevelCoordinates=[0,36];    
+                challengeLevelCoordinates=[0,36];
             }
         }
         totalRectsCountChallengeMode=Math.pow(challengeLevelCoordinates.reduce((a,b)=>b-a), 2);
@@ -1438,9 +1440,9 @@
 
         if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
             bypassSnakeLife=true;
+            msg=constructMessage();
             // update games stats once the maze is completed successfully
             saveGameStats();
-            msg=constructMessage();
         }
 
         if(!bypassSnakeLife && snakeLife > 1) {
@@ -1666,7 +1668,7 @@
             msg=messages.CONGRATULATIONS + messages.COMMA
                 + messages.LEVEL_UNLOCKED + messages.SPACE
                 + messages.RESET;
-            level++;
+            incrementLevel=true;
         }
         else if(selectedLevel < unlockedLevels) {
             msg=messages.CONGRATULATIONS + messages.EXCLAMATION + messages.SPACE + messages.RESET;
