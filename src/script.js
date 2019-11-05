@@ -1004,9 +1004,12 @@
         }
 
         // update unlockedLevels if current level is greater than already stored
-        if(incrementLevel && level === unlockedLevels) {
+        if((isClassicMode() && level > unlockedLevels) || incrementLevel) {
             incrementLevel=false;
-            persistItem("unlocked" + capitalize(selectedMode) + "Levels", ++level);
+            if(!isClassicMode()) {
+                level++;
+            }
+            persistItem("unlocked" + capitalize(selectedMode) + "Levels", level);
         }
 
         updateLeaderboard();
