@@ -1762,6 +1762,7 @@
     var resetGameProgress = function() {
         gameProgressBar.style.width=0;
         gameProgressBar.style.borderColor="transparent";
+        gameProgressBar.style.background="transparent";
         if(isMazeMode()) {
             mazePathTraversed=0;
         }
