@@ -21,7 +21,8 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    justify-content: space-between;
+    margin-top: 10px;
+    /* justify-content: space-between; */
 }
 .body-column {
     display: flex;
@@ -150,14 +151,6 @@ body.portable-device .game-stats div.life span {
 .game-arena .instructions div.disabled {
     opacity: 0.6 !important;
     cursor: default !important;
-}
-.game-arena .instructions .tutorial {
-    display: flex;
-    justify-content: flex-end;
-    text-decoration: underline;
-}
-.game-arena .instructions .tutorial div {
-    padding: 10px;
 }
 .game-arena .game-arena-display div {
     margin: 1px;
@@ -322,12 +315,13 @@ body.portable-device .game-stats div.life span {
 /* styles for game actions - start */
 .game-actions {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     flex-direction: column;
+    /* justify-content: center; */
 }
 .game-action-buttons {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
 }
 .game-action-buttons div.buttons {
     display: flex;
@@ -410,35 +404,45 @@ body.portable-device .game-stats div.life span {
 }
 /* boost - end */
 
-/* styles for tutorial overlay - start */
-.tutorial-overlay {
+/* styles for copyright info - start */
+.copyright-details {
     display: flex;
-    width: 100%;
-    height: 100%;
-    position: absolute;
+    margin-bottom: 10px;
     align-items: center;
-    background: #8888;
-    z-index: 1000;
+    justify-content: flex-end;
     flex-direction: column;
-    padding-top: 33px;
+    flex-grow: 9;
 }
-.tutorial-overlay .image-container .hidden {
-    left: -10000px;
-    top: -10000px;
-    position: absolute;
-}
-.tutorial-overlay .image-selection {
+.copyright-details .info {
     display: flex;
-    width: 60px;
-    height: 20px;
-    margin-top: -34px;
+    width: 400px;
+    justify-content: space-between;
+    font-size: 7px;
+}
+.copyright-details .info div {
+    display: flex;
+    margin: 2px 5px;
+}
+.copyright-details .info .link > a {
+    color: #fffb;
+    text-decoration: none;
+}
+.copyright-details .info .link > a:hover {
+    text-decoration: underline;
+}
+/* styles for copyright info - end */
+
+/* utility styles - start */
+.horizontal-separator {
+    display: block;
+    justify-content: center;
     align-items: center;
-    justify-content: space-evenly;
 }
-.tutorial-overlay .image-selection .indicator {
-    border-radius: 10px;
-    width: 6px;
-    height: 6px;
-    background: #e2e2e2;
+.horizontal-separator .line {
+    height: 0;
+    display: flex;
+    width: 400px;
+    border: 0px solid #fffb;
+    border-top-width: 1px;
 }
-/* styles for tutorial overlay - end */
+/* utility styles - end */

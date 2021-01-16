@@ -7,23 +7,9 @@
 		<title>Snake Reloaded!</title>
 		<link rel="stylesheet" type="text/css" href="style/default.css" />
 		<link rel="stylesheet" type="text/css" href="style/dark.css" />
+		<link rel="stylesheet" type="text/css" href="gamepad/style/styles.css" />
 	</head>
 	<body class="dark">
-		<div class="tutorial-overlay hide">
-			<div class="image-container">
-				<img id="1" class="hidden" src="assets/tutorial/left-right.png"/>
-				<img id="2" class="hidden" src="assets/tutorial/up-down.png"/>
-				<img id="3" class="hidden" src="assets/tutorial/u-turn.png"/>
-				<img id="4" class="hidden" src="assets/tutorial/lane-switch.png"/>
-			</div>
-			<div class="image-selection">
-				<div class="indicator"></div>
-				<div class="indicator"></div>
-				<div class="indicator"></div>
-				<div class="indicator"></div>
-			</div>
-		</div>
-		<div class="link"><a target="_blank" href="https://github.com/kapilkashyap/snake">Github</a></div>
 		<div class="body-container">
 			<div class="body-column">
 				<div class="game-container game-container-dimensions">
@@ -37,12 +23,6 @@
 								<div class="label">Score:</div>
 								<div class="value">0</div>
 							</div>
-							<!--
- 							<div class="time">
-								<div class="label">Time:</div>
-								<div class="value">0s</div>
-							</div>
-							-->
 						</div>
 						<div class="life">
 							<div class="label">Life:</div>
@@ -87,9 +67,6 @@
 									<li>Clear the maze to increase level.</li>
 								</ol>
 							</div>
-							<div class="tutorial">
-								<div>Tutorial</div>
-							</div>
 						</div>
 						<div class="game-arena-display">
 							<div class="dummy"></div>
@@ -106,8 +83,10 @@
 				<div class="leaderboard"></div>
 			</div>
 
+            <div class="gamepad hide"></div>
+
 			<div class="body-column">
-				<div class="game-actions">
+				<div class="game-actions hide">
 					<div class="game-action-buttons">
 						<div class="buttons">
 							<div class="button play-pause"><button></button></div>
@@ -118,17 +97,18 @@
 				</div>
 			</div>
 		</div>
-		<script src="src/script.min.js"></script>
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-39875161-2"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
+        <div class="copyright-details">
+            <div class="horizontal-separator">
+                <div class="line">&nbsp;</div>
+            </div>
+            <div class="info">
+                <div class="copyright">Copyright<span>&nbsp;&#169;&nbsp;</span>2020 Kapil Kashyap</div>
+                <div class="link"><a href="https://github.com/kapilkashyap/snake" target="_blank">Github</a></div>
+            </div>
+        </div>
 
-		  gtag('config', 'UA-39875161-2');
-		</script>
-		<!-- Go to www.addthis.com/dashboard to customize your tools -->
-		<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5d962477893b4145"></script>
+        <!-- Load scripts -->
+		<script src="src/script.min.js"></script>
+		<script src="gamepad/src/script.min.js"></script>
 	</body>
 </html>

@@ -91,9 +91,6 @@
                 document.body.style.zoom="200%";
             }
             document.body.classList.add("portable-device");
-//             setTimeout(function() {
-//                 document.querySelector(".desktop-message").innerHTML=messages.DISCLAIMER;
-//             }, 0);
             return true;
         }
         return false;
@@ -161,191 +158,71 @@
         document.querySelectorAll(".life .value span").forEach(function(node) {
             node.innerHTML="&#9829;";
         });
-        if(!isPortableMode) {
-            document.querySelector(".instructions .tutorial").classList.add("hide");
-            document.querySelector(".game-actions").classList.add("hide");
 
-            document.addEventListener("keydown", function(event) {
-                event.stopPropagation();
-                event.preventDefault();
-                if(event.keyCode===38 || event.keyCode===87) {
-                    if(event.shiftKey && (direction==="east" || direction==="west")) {
-                        handleDoubleDirectionChange(["north", direction]);
-                    }
-                    else if(event.ctrlKey && (direction==="east" || direction==="west")) {
-                        handleDoubleDirectionChange(["north", direction==="east" ? "west" : "east"]);
-                    }
-                    else {
-                        handleDirectionChange("north");                        
-                    }
+        document.addEventListener("keydown", function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if(event.keyCode===38 || event.keyCode===87) {
+                if(event.shiftKey && (direction==="east" || direction==="west")) {
+                    handleDoubleDirectionChange(["north", direction]);
                 }
-                else if(event.keyCode===39 || event.keyCode===68) {
-                    if(event.shiftKey && (direction==="north" || direction==="south")) {
-                        handleDoubleDirectionChange(["east", direction]);
-                    }
-                    else if(event.ctrlKey && (direction==="north" || direction==="south")) {
-                        handleDoubleDirectionChange(["east", direction==="north" ? "south" : "north"]);
-                    }
-                    else {
-                        handleDirectionChange("east");
-                    }
+                else if(event.ctrlKey && (direction==="east" || direction==="west")) {
+                    handleDoubleDirectionChange(["north", direction==="east" ? "west" : "east"]);
                 }
-                else if(event.keyCode===40 || event.keyCode===83) {
-                    if(event.shiftKey && (direction==="east" || direction==="west")) {
-                        handleDoubleDirectionChange(["south", direction]);
-                    }
-                    else if(event.ctrlKey && (direction==="east" || direction==="west")) {
-                        handleDoubleDirectionChange(["south", direction==="east" ? "west" : "east"]);
-                    }
-                    else {
-                        handleDirectionChange("south");
-                    }
+                else {
+                    handleDirectionChange("north");                        
                 }
-                else if(event.keyCode===37 || event.keyCode===65) {
-                    if(event.shiftKey && (direction==="north" || direction==="south")) {
-                        handleDoubleDirectionChange(["west", direction]);
-                    }
-                    else if(event.ctrlKey && (direction==="north" || direction==="south")) {
-                        handleDoubleDirectionChange(["west", direction==="north" ? "south" : "north"]);
-                    }
-                    else {
-                        handleDirectionChange("west");
-                    }
+            }
+            else if(event.keyCode===39 || event.keyCode===68) {
+                if(event.shiftKey && (direction==="north" || direction==="south")) {
+                    handleDoubleDirectionChange(["east", direction]);
                 }
-                else if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
-                    playEventHandler();
+                else if(event.ctrlKey && (direction==="north" || direction==="south")) {
+                    handleDoubleDirectionChange(["east", direction==="north" ? "south" : "north"]);
                 }
-                else if (event.keyCode===32 && gameState!=="over") {
-                    pauseEventHandler();
+                else {
+                    handleDirectionChange("east");
                 }
-                else if (event.keyCode===82 && interval===undefined) { //reset
-                    resetEventHandler();
+            }
+            else if(event.keyCode===40 || event.keyCode===83) {
+                if(event.shiftKey && (direction==="east" || direction==="west")) {
+                    handleDoubleDirectionChange(["south", direction]);
                 }
-            });
-        }
-        else {
+                else if(event.ctrlKey && (direction==="east" || direction==="west")) {
+                    handleDoubleDirectionChange(["south", direction==="east" ? "west" : "east"]);
+                }
+                else {
+                    handleDirectionChange("south");
+                }
+            }
+            else if(event.keyCode===37 || event.keyCode===65) {
+                if(event.shiftKey && (direction==="north" || direction==="south")) {
+                    handleDoubleDirectionChange(["west", direction]);
+                }
+                else if(event.ctrlKey && (direction==="north" || direction==="south")) {
+                    handleDoubleDirectionChange(["west", direction==="north" ? "south" : "north"]);
+                }
+                else {
+                    handleDirectionChange("west");
+                }
+            }
+            else if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
+                playEventHandler();
+            }
+            else if (event.keyCode===32 && gameState!=="over") {
+                pauseEventHandler();
+            }
+            else if (event.keyCode===82 && interval===undefined) { //reset
+                resetEventHandler();
+            }
+        });
+
+        if(isPortableMode) {
+            document.querySelector(".gamepad").classList.remove("hide");
             document.querySelector(".game-actions").classList.remove("hide");
-            updateActionButtonLabel();
-
-            // temporarily disable tutorial
-            document.querySelector(".instructions .tutorial").classList.add("hide");
-            document.querySelector(".tutorial div").addEventListener("touchstart", function(event) {
-                event.stopPropagation();
-                event.preventDefault();
-                document.querySelector(".tutorial-overlay").classList.remove("hide");
-                document.querySelector(".image-container img:nth-child(1)").classList.remove("hidden");
-                document.querySelector(".image-selection .indicator:nth-child(1)").style.background="#888";
-            }, {passive: false});
-
-            document.querySelectorAll(".image-container img").forEach(function(el) {
-                let imageSelectionNode = document.querySelector(".image-selection");
-                el.addEventListener("touchstart", function(event) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    let id=+this.id;
-                    this.classList.add("hidden");
-                    imageSelectionNode.querySelector(".indicator:nth-child(" + (id) + ")").style.background="";
-                    imageSelectionNode.querySelector(".indicator:nth-child(" + (id===4?1:id+1) + ")").style.background="#888";
-                    if(this.nextElementSibling) {
-                        this.nextElementSibling.classList.remove("hidden");
-                    }
-                    else {
-                        document.querySelector(".image-container img").classList.remove("hidden");
-                    }
-                }, {passive: false});
-            });
-
-            document.querySelector(".tutorial-overlay").addEventListener("touchstart", function(event) {
-                event.stopPropagation();
-                event.preventDefault();
-                document.querySelectorAll(".image-container img").forEach(function(el) {
-                    el.classList.add("hidden");
-                });
-                document.querySelectorAll(".image-selection .indicator").forEach(function(el) {
-                    el.style.background="";
-                });
-                this.classList.add("hide");
-            }, {passive: false});
-
-            document.querySelector(".body-container").addEventListener("touchstart", function(event) {
-                let touchObj=event.changedTouches[0];
-                startX=touchObj.pageX;
-                startY=touchObj.pageY;
-                // record time when finger first makes contact with surface
-                startTime=new Date().getTime();
-                isGesture=true;
-                thresholdPassed=false;
-                event.preventDefault();
-            }, { passive: false });
-
-            document.querySelector(".body-container").addEventListener("touchend", function(event) {
-                if(isGesture) {
-                    let touchObj=event.changedTouches[0];
-                    endX=touchObj.pageX;
-                    endY=touchObj.pageY;
-
-                    // get horizontal dist traveled by finger while in contact with surface
-                    deltaX=endX - startX;
-                    // get vertical dist traveled by finger while in contact with surface
-                    deltaY=endY - startY;
-                    // get time elapsed
-                    elapsedTime=new Date().getTime() - startTime;
-                    // calculate the angle of swipe
-                    swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
-                    thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
-                    if (elapsedTime <= allowedTime) {
-                        //  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
-                        if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
-                            if(swipeAngle<swipeAngleMinThreshold) {
-                                swipeDirection=["east"];
-                            }
-                            else if(swipeAngle>swipeAngleMaxThreshold) {
-                                swipeDirection=["north"];
-                            }
-                            else if(thresholdPassed) {
-                                swipeDirection=["east", "north"];
-                            }
-                        }
-                        else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
-                            if(swipeAngle<swipeAngleMinThreshold) {
-                                swipeDirection=["west"];
-                            }
-                            else if(swipeAngle>swipeAngleMaxThreshold) {
-                                swipeDirection=["north"];
-                            }
-                            else if(thresholdPassed) {
-                                swipeDirection=["west", "north"];
-                            }
-                        }
-                        else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
-                            if(swipeAngle<swipeAngleMinThreshold) {
-                                swipeDirection=["west"];
-                            }
-                            else if(swipeAngle>swipeAngleMaxThreshold) {
-                                swipeDirection=["south"];
-                            }
-                            else if(thresholdPassed) {
-                                swipeDirection=["west", "south"];
-                            }
-                        }
-                        else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
-                            if(swipeAngle<swipeAngleMinThreshold) {
-                                swipeDirection=["east"];
-                            }
-                            else if(swipeAngle>swipeAngleMaxThreshold) {
-                                swipeDirection=["south"];
-                            }
-                            else if(thresholdPassed) {
-                                swipeDirection=["east", "south"];
-                            }
-                        }
-                        handleGesture(swipeDirection);
-                    }
-                    isGesture=false;
-                }
-                event.preventDefault();
-            }, { passive: false });
         }
+
+        updateActionButtonLabel();
 
         document.querySelector(".game-actions .play-pause").addEventListener("touchstart", function(event) {
             event.stopPropagation();
@@ -378,20 +255,6 @@
                 pauseEventHandler();
             }
         }, { passive: false });
-    };
-
-    var handleGesture = function(gesture) {
-        if(gesture) {
-            if(gesture.length===2) {
-                // if snake is moving horizontally, swap gesture directions
-                let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
-                movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
-                movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
-            }
-            else {
-                handleDirectionChange(gesture[0]);
-            }      
-        }
     };
 
     var handleDoubleDirectionChange = function(doubleDirection) {
