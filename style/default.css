@@ -46,6 +46,7 @@ html, body {
 /*     height: 492px; */
 }
 .game-stats {
+    margin-bottom: 10px;
     background: #ffffff;
     display: flex;
     height: 20px;
@@ -79,6 +80,7 @@ body.portable-device .game-stats div.life span {
     text-shadow: 0 0 0 red;
 }
 .game-arena {
+    margin-bottom: 10px;
     background: #ffffff;
     display: flex;
     justify-content: space-around;
@@ -132,7 +134,7 @@ body.portable-device .game-stats div.life span {
     text-transform: capitalize;
 }
 .game-arena .instructions div.enabled:hover {
-    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.6);
 }
 .game-arena .instructions .selectMode .mode {
     border: 1px solid #757575;
@@ -194,8 +196,7 @@ body.portable-device .game-stats div.life span {
 .leaderboard {
     background-color: #ffffff;
     display: flex;
-    margin: auto;
-    margin-top: 10px;
+    margin: 10px auto auto;
     border: 1px solid grey;
     width: 434px;
     flex-wrap: wrap;
@@ -442,7 +443,7 @@ body.portable-device .game-stats div.life span {
     height: 0;
     display: flex;
     width: 400px;
-    border: 0px solid #fffb;
+    border: 0 solid #fffb;
     border-top-width: 1px;
 }
 /* utility styles - end */
