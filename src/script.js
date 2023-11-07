@@ -35,27 +35,27 @@
     // MODES
     let availableModes=['classic', 'challenge', 'maze'];
     let unlockedModes=['classic', 'challenge', 'maze'];
-    let selectedMode='classic';
+    let selectedMode=availableModes[0];
 
     // TOUCH EVENT VARIABLES
-    let isGesture=false;
-    let startX;
-    let startY;
-    let endX;
-    let endY;
-    let deltaX;
-    let deltaY;
-    let startTime;
-    let elapsedTime;
-    let swipeDirection;
-    let swipeAngle;
-    let swipeAngleMinThreshold;
-    let swipeAngleMaxThreshold;
-    let thresholdPassed=false;
-    let swipeThreshold=25; //required minimum distance traveled to be considered swipe
-    let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right angled movement
-    let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right angled movement
-    let allowedTime=300; //maximum time allowed to travel that distance
+    // let isGesture=false;
+    // let startX;
+    // let startY;
+    // let endX;
+    // let endY;
+    // let deltaX;
+    // let deltaY;
+    // let startTime;
+    // let elapsedTime;
+    // let swipeDirection;
+    // let swipeAngle;
+    // let swipeAngleMinThreshold;
+    // let swipeAngleMaxThreshold;
+    // let thresholdPassed=false;
+    // let swipeThreshold=25; //required minimum distance traveled to be considered swipe
+    // let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right-angled movement
+    // let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right-angled movement
+    // let allowedTime=300; //maximum time allowed to travel that distance
 
     // GAME CONFIG
     let interval;
@@ -80,8 +80,8 @@
     let incrementLevel=false;
     let score=0;
     let scoreNode=document.querySelector(".score>.value");
-    let time=0.0;
-    let timerNode=document.querySelector(".time>.value");
+    // let time=0.0;
+    // let timerNode=document.querySelector(".time>.value");
     let isPortableMode=(function() {
         if( /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent) ) {
             if( /iPad/i.test(navigator.userAgent) ) {
@@ -118,7 +118,7 @@
         "SPACE": " "
     };
 
-    var setupArena = function() {
+    const setupArena = function() {
         let arena=document.querySelector(".game-arena-display");
         let dimensions=arena.getBoundingClientRect();
         let sampleTile=arena.querySelector("div");
@@ -154,7 +154,7 @@
         registerKeys();
     };
 
-    var registerKeys = function() {
+    const registerKeys = function() {
         document.querySelectorAll(".life .value span").forEach(function(node) {
             node.innerHTML="&#9829;";
         });
@@ -250,21 +250,21 @@
             }
         }, { passive: false });
 
-        window.addEventListener("blur", function(event) {
+        window.addEventListener("blur", function() {
             if(gameState==="play") {
                 pauseEventHandler();
             }
         }, { passive: false });
     };
 
-    var handleDoubleDirectionChange = function(doubleDirection) {
+    const handleDoubleDirectionChange = function(doubleDirection) {
         if (gameState==="play" /*&& movesQueue[0]!==doubleDirection[0]*/) {
             movesQueue.unshift(doubleDirection[0]);
             movesQueue.unshift(doubleDirection[1]);
         }
     };
 
-    var handleDirectionChange = function(directionChangedTo) {
+    const handleDirectionChange = function(directionChangedTo) {
         if (gameState==="play" && movesQueue[0]!==directionChangedTo) {
             if (directionChangedTo==="north" && movesQueue[0]!=="south" && direction!=="south") { //north
                 movesQueue.unshift(directionChangedTo);
@@ -281,7 +281,7 @@
         }
     };
 
-    var playEventHandler = function() {
+    const playEventHandler = function() {
         updateRowColumnDirection();
         updateLevel(+retrieveItem("selected" + capitalize(selectedMode) + "Level") || 1);
         setSpeed();
@@ -299,7 +299,7 @@
         isPortableMode && updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
     };
 
-    var pauseEventHandler = function() {
+    const pauseEventHandler = function() {
         if (gameState!=="paused" && gameState!=="lifeLost") {
             interval=clearInterval(interval);
             timerInterval=clearInterval(timerInterval);
@@ -331,7 +331,7 @@
         }
     };
 
-    var resetEventHandler = function() {
+    const resetEventHandler = function() {
         setGameState("over");
         clearNodes();
         updateLife();
@@ -345,10 +345,10 @@
             disableResetButton();
         }
         removeTrail();
-        removeCrosshair();
+        removeCrossHair();
     };
 
-    var defaultSettings = function() {
+    const defaultSettings = function() {
         updateRowColumnDirection();
         interval=undefined;
         flickerInterval=clearInterval(flickerInterval);
@@ -381,15 +381,15 @@
         });
     };
 
-    var setDirection = function(_direction) {
+    const setDirection = function(_direction) {
         direction=_direction||defaultDirection;
     };
 
-    var setGameState = function(state) {
+    const setGameState = function(state) {
         gameState=state;
     };
 
-    var applySnakeBodyCurve = function(_directionChangedTo) {
+    const applySnakeBodyCurve = function(_directionChangedTo) {
         if(_directionChangedTo===prevDirection) {
             return;
         }
@@ -411,7 +411,7 @@
     };
 
     // INTERVALS
-    var setSpeedInterval = function(_speed) {
+    const setSpeedInterval = function(_speed) {
         // making sure the interval is cleared before setting a new interval
         interval=clearInterval(interval);
         interval=setInterval(function() {
@@ -424,13 +424,13 @@
         }, _speed||speed);
     };
 
-    var setTimer = function() {
-        timerInterval=setInterval(function() {
-            timerNode.innerText=(time+=.1).toFixed(1) + "s";
-        },100);
-    };
+    // const setTimer = function() {
+    //     timerInterval=setInterval(function() {
+    //         timerNode.innerText=(time+=.1).toFixed(1) + "s";
+    //     },100);
+    // };
 
-    var setScorer = function() {
+    const setScorer = function() {
         scoreInterval=setInterval(function() {
             score += level*snakeLife;
             scoreNode.innerText=score;
@@ -438,11 +438,11 @@
     };
 
     // UTILITY METHODS
-    var capitalize = function(s) {
+    const capitalize = function(s) {
         return s[0].toUpperCase() + s.slice(1);   
     };
 
-    var getDimension = function (node) {
+    const getDimension = function (node) {
         let style=getComputedStyle(node);
         let width=parseFloat(style.marginLeft) + parseFloat(style.marginRight)
             + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth)
@@ -456,78 +456,78 @@
         return { width, height };
     };
 
-    var isClassicMode = function() {
+    const isClassicMode = function() {
         return selectedMode==="classic";
     };
 
-    var isChallengeMode = function() {
+    const isChallengeMode = function() {
         return selectedMode==="challenge";
     };
 
-    var isMazeMode = function() {
+    const isMazeMode = function() {
         return selectedMode==="maze";
     };
 
-    var setSnakeLength = function(length) {
+    const setSnakeLength = function(length) {
         snakeLength=(length || getDefaultSnakeLength());
         prevSnakeLength=snakeLength;
     };
 
-    var getDefaultSnakeLength = function() {
+    const getDefaultSnakeLength = function() {
         return isClassicMode() ? (level===1 ? 3 : levelUpPeriod*(level-1)) : (10+level);
     };
 
-    var updateScore = function(points) {
+    const updateScore = function(points) {
         score += (points || 10) * level;
     };
 
-    var removeTrail = function() {
+    const removeTrail = function() {
         document.querySelectorAll(".game-arena-display div.trail").forEach(function(node) {
             node.classList.remove("trail");
         });  
     };
 
-    var addLife = function() {
-        document.querySelector("span:nth-of-type(" + ++snakeLife + ")").classList.add("available");
-    };
+    // const addLife = function() {
+    //     document.querySelector("span:nth-of-type(" + ++snakeLife + ")").classList.add("available");
+    // };
 
-    var loseLife = function() {
+    const loseLife = function() {
         document.querySelector("span.available:nth-of-type(" + snakeLife-- + ")").classList.remove("available");
     };
 
-    var updateLife = function(reset) {
+    const updateLife = function(reset) {
         document.querySelectorAll("span").forEach(function(node) {
             node.classList[reset ? "add" : "remove"]("available");
         });
     };
 
-    var updateMessage = function(msg) {
+    const updateMessage = function(msg) {
         document.querySelector("div.message").innerHTML=msg || "";
     };
 
-    var updateActionButtonLabel = function(lbl) {
+    const updateActionButtonLabel = function(lbl) {
         document.querySelector(".button.play-pause button").innerHTML=lbl||messages.PLAY_BUTTON_LABEL;
     };
 
-    var updateSwipeAngleThresholds = function() {
-        swipeAngleMinThreshold=isMazeMode()?45:defaultSwipeAngleMinThreshold;
-        swipeAngleMaxThreshold=isMazeMode()?45:defaultSwipeAngleMaxThreshold;
-    };
+    // const updateSwipeAngleThresholds = function() {
+    //     swipeAngleMinThreshold=isMazeMode()?45:defaultSwipeAngleMinThreshold;
+    //     swipeAngleMaxThreshold=isMazeMode()?45:defaultSwipeAngleMaxThreshold;
+    // };
 
-    var disableResetButton = function(isDisabled) {
-        isDisabled=isDisabled===undefined ? true : false;
+    const disableResetButton = function(isDisabled) {
+        isDisabled=isDisabled===undefined;
         document.querySelector(".button.reset button").disabled=isDisabled;
     };
 
-    var toggleHide = function(btn, hide) {
+    const toggleHide = function(btn, hide) {
         document.querySelector(".button." + btn).classList[hide ? "add" : "remove"]("hide");
     };
 
-    var setSpeed = function() {
+    const setSpeed = function() {
         speed=calculateSpeed();
     };
 
-    var calculateSpeed = function(lvl) {
+    const calculateSpeed = function(lvl) {
         lvl=lvl || level;
         if(isChallengeMode()) {
             return classicModeBaseTime - ((reduction-20)*lvl);
@@ -538,16 +538,16 @@
         return baseTime - (reduction*lvl) + ((lvl >= 9) ? ((reduction/2) * (lvl-8)) : 0);
     };
 
-    var calculateLevelUpPeriod = function() {
+    const calculateLevelUpPeriod = function() {
         return Math.round(Math.cbrt(southThreshold * eastThreshold));
     };
 
-    var updateLevel = function(lvl) {
+    const updateLevel = function(lvl) {
         level=lvl;
         levelNode.innerText=lvl;
     };
 
-    var calculateMaxLevels = function() {
+    const calculateMaxLevels = function() {
         let _speed;
         let lvl=1;
         for(;;lvl++) {
@@ -565,7 +565,7 @@
         maxLevel=lvl;
     };
 
-    var setGameProgressFactor = function() {
+    const setGameProgressFactor = function() {
         let maxProgressPercentage=100;
         if(isClassicMode()) {
             gameProgressFactor=maxProgressPercentage/(maxLevel*levelUpPeriod);
@@ -580,7 +580,7 @@
         }
     };
 
-    var clearNodes = function() {
+    const clearNodes = function() {
         nodes.concat(removeNodes).forEach(function (entry) {
             removePath(entry);
         });
@@ -590,7 +590,7 @@
         }, 0);
     };
 
-    var setRowColumnDirection = function() {
+    const setRowColumnDirection = function() {
         row=southThreshold;
         //column=Math.round((eastThreshold+westThreshold)/2);
         column=westThreshold;
@@ -598,7 +598,7 @@
         movesQueue=[];
     };
 
-    var updateRowColumnDirection = function() {
+    const updateRowColumnDirection = function() {
         if(isMazeMode()) {
             let startingNode;
             let data;
@@ -611,8 +611,8 @@
             }
 
             data=startingNode.getAttribute("data").split(",");
-            row=+data[0];
-            column=+data[1];
+            row = +data[0];
+            column = +data[1];
             setDirection(startingNode.getAttribute("direction"));
 
             if(direction==="north") {
@@ -634,18 +634,18 @@
         }
     };
 
-    var hideInstructions = function(flag) {
+    const hideInstructions = function(flag) {
         flag=(flag===undefined) ? true : flag;
         document.querySelector('.instructions').classList.remove('show', 'hide');
         document.querySelector('.instructions').classList.add(flag ? 'hide' : 'show');
         !flag && updateModeLevels();
     };
 
-    var nodeSelection = function(entry) {
+    const nodeSelection = function(entry) {
         return entry && document.querySelector(".rc_" + entry[0] + "_" + entry[1]);
     };
 
-    var addCrosshair = function(entry) {
+    const addCrossHair = function(entry) {
         for(let index = 1; index <= columnsCount; index++) {
             addEntity([entry[0], index], "crosshair");
         }
@@ -654,7 +654,7 @@
         }
     };
 
-    var removeCrosshair = function() {
+    const removeCrossHair = function() {
         document.querySelectorAll(".crosshair").forEach(function(node) {
             node.classList.remove("crosshair");
             if(isClassicMode()) {
@@ -663,7 +663,7 @@
         });
     };
 
-    var addEntity = function(entry, entityType) {
+    const addEntity = function(entry, entityType) {
         let node=nodeSelection(entry);
         if(node) {
             if(Object.prototype.toString.call(entityType)==="[object Array]") {
@@ -678,7 +678,7 @@
         }
     };
 
-    var removeEntityFromNode = function(node, entityType) {
+    const removeEntityFromNode = function(node, entityType) {
         if(node) {
             if(Object.prototype.toString.call(entityType)==="[object Array]") {
                 entityType.forEach(function(entity) {
@@ -692,12 +692,12 @@
         }
     };
 
-    var removeEntity = function(entry, entityType) {
-        let node=nodeSelection(entry);
+    const removeEntity = function(entry, entityType) {
+        // let node=nodeSelection(entry);
         removeEntityFromNode(nodeSelection(entry), entityType);
     };
 
-    var removePath = function(entry) {
+    const removePath = function(entry) {
         if(entry!==undefined) {
             let node=nodeSelection(entry);
             if(node) {
@@ -711,7 +711,7 @@
         }
     };
 
-    var addPath = function() {
+    const addPath = function() {
         for(let node, index=0; index < nodes.length; index++) {
             node=nodeSelection(nodes[index]);
             if(node) {
@@ -740,7 +740,7 @@
         }
     };
 
-    var onValidPath = function(_coordinate, _selector) {
+    const onValidPath = function(_coordinate, _selector) {
         let node=nodeSelection(_coordinate);
         if(node) {
             if(isMazeMode()) {
@@ -755,7 +755,7 @@
         return false;
     };
 
-    var onValidMazePath = function(_coordinate) {
+    const onValidMazePath = function(_coordinate) {
         let node=nodeSelection(_coordinate);
         if(node && isMazeMode()) {
             // avoid deviation from maze path
@@ -765,33 +765,33 @@
     };
 
     // PERSISTENCE METHODS
-    var persistItem = function(key, value) {
+    const persistItem = function(key, value) {
         localStorage.setItem(key, value);
     };
 
-    var retrieveItem = function(key) {
+    const retrieveItem = function(key) {
         return localStorage.getItem(key);
     };
 
     // LOGIC TO GENERATE FOOD
-    var generateFood = function() {
+    const generateFood = function() {
         if(isMazeMode()) {
             return;
         }
-        var emptyNodes=document.querySelectorAll(".game-arena-display div.empty:not(.head)");
+        const emptyNodes=document.querySelectorAll(".game-arena-display div.empty:not(.head)");
         if(emptyNodes.length > 0) {
             let emptyNode=emptyNodes[Math.floor(Math.random() * emptyNodes.length)];
             let randomCoordinate=emptyNode.getAttribute("data").split(",");
             let entry=[+randomCoordinate[0], +randomCoordinate[1]];
             meals.push(entry.toString());
             addEntity(entry, "food");
-            removeCrosshair();
-            addCrosshair(entry);
+            removeCrossHair();
+            addCrossHair(entry);
         }
     };
 
     // LOGIC FOR FLICKER EFFECT
-    var induceFlickerEffect = function(flickerCount) {
+    const induceFlickerEffect = function(flickerCount) {
         flickerCount=flickerCount || 6;
         let paths=document.querySelectorAll(".path");
         flickerInterval=setInterval(function() {
@@ -807,7 +807,7 @@
     };
 
     // LOGIC TO INDUCE A PAUSE BEFORE CONTINUING
-    var inducePause = function(milliseconds) {
+    const inducePause = function(milliseconds) {
        if(gameState!=="paused") {
             interval=clearInterval(interval);
             setGameState("paused");
@@ -820,7 +820,7 @@
     };
 
     // LOGIC TO CHECK IF GAME IS OVER
-    var checkGameOver = function() {
+    const checkGameOver = function() {
         if(isClassicMode() && speed < speedCutOff) {
             level--;
             gameOver(10, "Well done! :)", true);
@@ -836,7 +836,7 @@
     };
 
     // LOGIC TO SAVE GAME STATS
-    var saveGameStats = function() {
+    const saveGameStats = function() {
         //time=time.toFixed(1);
         let stats=retrieveItem("snake-game-stats");
         let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
@@ -879,18 +879,18 @@
     };
 
     // MAZE MODE METHODS
-    var randomMazeCoordinatesSelector = function() {
-        selectedCoordinates=coordinates[Math.floor(Math.random() * 12)];
-        return selectedCoordinates;
-    };
+    // const randomMazeCoordinatesSelector = function() {
+    //     selectedCoordinates=coordinates[Math.floor(Math.random() * 12)];
+    //     return selectedCoordinates;
+    // };
 
-    var mazeCoordinatesSelector = function() {
+    const mazeCoordinatesSelector = function() {
         let selectedModeLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         selectedCoordinates=coordinates[selectedModeLevel-1];
         return selectedCoordinates;
     };
 
-    var clearMazeModeUI = function() {
+    const clearMazeModeUI = function() {
         // remove all decoration css classes and direction attribute added to the maze-path
         document.querySelectorAll(".maze-mode .maze-path").forEach(function(node) {
             node.removeAttribute("direction");
@@ -900,7 +900,7 @@
         document.querySelector(".game-arena-display").classList.remove("maze-mode");
     };
 
-    var generateMazePath = function(gridDimension) {
+    const generateMazePath = function(gridDimension) {
         // proactively clear the maze path first
         clearMazeModeUI();
 
@@ -986,12 +986,12 @@
         });
     };
 
-    var isImmersiveExperienceOn = function() {
+    const isImmersiveExperienceOn = function() {
         return document.querySelector("body").classList.contains("dark");
     };
 
     // CHALLENGE MODE METHODS
-    var predefinedThresholdsForChallengeMode = function() {
+    const predefinedThresholdsForChallengeMode = function() {
         let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         let challengeLevelCoordinates;
         let immersiveExp = isImmersiveExperienceOn();
@@ -1031,7 +1031,7 @@
         return challengeLevelCoordinates;
     };
 
-    var updateGameArenaThresholds = function(thresholds) {
+    const updateGameArenaThresholds = function(thresholds) {
         // update the threshold limits
         northThreshold=thresholds[0]+1;
         westThreshold=thresholds[0]+1;
@@ -1041,7 +1041,7 @@
         setRowColumnDirection();
     };
 
-    var updateChallengeModeUI = function(thresholds) {
+    const updateChallengeModeUI = function(thresholds) {
         thresholds = thresholds || predefinedThresholdsForChallengeMode();
         // proactively clear the classic mode first
         clearChallengeModeUI();
@@ -1063,7 +1063,7 @@
         });
     };
 
-    var clearChallengeModeUI = function() {
+    const clearChallengeModeUI = function() {
         updateGameArenaThresholds(baseThresholds);
         document.querySelectorAll(".danger").forEach(function(node) {
             node.classList.remove("danger");
@@ -1073,7 +1073,7 @@
     };
 
     // EVENT HANDLERS
-    var modeSelectionEventHandler = function(event) {
+    const modeSelectionEventHandler = function(event) {
         event.stopPropagation();
         document.querySelector('.modes div.selected').classList.remove('selected');
         this.classList.add('selected');
@@ -1102,10 +1102,10 @@
         updateLeaderboard();
         setGameProgressFactor();
         resetGameProgress();
-        updateSwipeAngleThresholds();
+        // updateSwipeAngleThresholds();
     };
 
-    var levelSelectionEventHandler = function(event) {
+    const levelSelectionEventHandler = function(event) {
         event.stopPropagation();
         document.querySelector('.levels div.selected').classList.remove('selected');
         this.classList.add('selected');
@@ -1121,7 +1121,7 @@
     };
 
     // SELECTION UI METHODS
-    var addAvailableModes = function() {
+    const addAvailableModes = function() {
         let levelsContainer=document.querySelector(".selectMode .modes");
         let div=document.createElement("DIV");
         let clone;
@@ -1135,11 +1135,11 @@
         });
     };
 
-    var updateModes = function() {
+    const updateModes = function() {
         let unlockedModes=JSON.parse(retrieveItem("unlockedModes"))||[selectedMode];
 
         selectedMode=retrieveItem("selectedMode")||selectedMode;
-        document.querySelectorAll(".selectMode .modes .mode").forEach(function(node, index) {
+        document.querySelectorAll(".selectMode .modes .mode").forEach(function(node) {
             let modeValue=node.getAttribute("data");
             // proactively remove click event listener and css classes
             node.removeEventListener(isPortableMode ? "touchstart" : "click", modeSelectionEventHandler);
@@ -1169,13 +1169,13 @@
         }
     };
 
-    var clearModeLevels = function() {
+    const clearModeLevels = function() {
         document.querySelectorAll(".selectLevel .levels .level").forEach(function(node) {
             node.remove();
         });
     };
 
-    var addModeLevels = function() {
+    const addModeLevels = function() {
         let levelsContainer=document.querySelector(".selectLevel .levels");
         let div=document.createElement("DIV");
         let clone;
@@ -1189,7 +1189,7 @@
         }
     };
 
-    var updateModeLevels = function() {
+    const updateModeLevels = function() {
         let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
 
@@ -1215,7 +1215,7 @@
         });
     };
 
-    var displayModeInstructions = function() {
+    const displayModeInstructions = function() {
         document.querySelectorAll(".instructions .details ol").forEach(function(node) {
             if(node.classList.contains(selectedMode + "-mode")) {
                 node.classList.add("show");
@@ -1231,7 +1231,7 @@
     };
 
     // STATS AND TIMINGS DISPLAY
-    var updateLeaderboard = function(limit) {
+    const updateLeaderboard = function(limit) {
         limit=limit || 3;
         let leaderboard=document.querySelector(".leaderboard");
         let stats=JSON.parse(retrieveItem("snake-game-stats"));
@@ -1249,7 +1249,7 @@
             let leaderBoardRow="<div class='row'>";
             //leaderBoardRow += "<div class='padded'></div>";
             leaderBoardRow += "<div class='column head'>S.No</div>";
-            keys.forEach(function(key, idx) {
+            keys.forEach(function(key) {
                 if(key!=="timestamp" && key!=="time") {
                     leaderBoardRow += "<div class='column head'>" + key + "</div>";
 //                     leaderBoardRow += "<div class='column head'>";
@@ -1271,7 +1271,7 @@
                     leaderBoardRow += "<div class='row'>";
                     //leaderBoardRow += "<div class='padded'></div>";
                     leaderBoardRow += "<div class='column'>" + (index+1) + ".</div>";
-                    keys.forEach(function(key, idx) {
+                    keys.forEach(function(key) {
                         if(key!=="timestamp" && key!=="time") {
                             leaderBoardRow += "<div class='column'>" + stat[key] + "</div>";
 //                             leaderBoardRow += "<div class='column'>";
@@ -1297,7 +1297,7 @@
     };
 
     // LOGIC FOR GAME OVER
-    var gameOver = function(count, msg, bypassSnakeLife) {
+    const gameOver = function(count, msg, bypassSnakeLife) {
         bypassSnakeLife=(bypassSnakeLife===undefined) ? false : bypassSnakeLife;
         interval=clearInterval(interval);
         timerInterval=clearInterval(timerInterval);
@@ -1331,7 +1331,7 @@
     };
 
     // SNAKE MOVE LOGIC
-    var moveSnake = function() {
+    const moveSnake = function() {
         let onValidPathCls=(isMazeMode() ? "maze-path" : "body");
         if(direction==="north") {
             if(nodes.length < snakeLength) {
@@ -1525,7 +1525,7 @@
         }
     };
 
-    var constructMessage = function() {
+    const constructMessage = function() {
         let msg;
         let selectedLevel=+retrieveItem("selected" + capitalize(selectedMode) + "Level")||1;
         let unlockedLevels=+retrieveItem("unlocked" + capitalize(selectedMode) + "Levels")||1;
@@ -1547,10 +1547,10 @@
         return msg;
     };
 
-    var triggerLevelUp = function() {
-        let levelUpValueNode=document.querySelector(".level .value");
+    const triggerLevelUp = function() {
+        const levelUpValueNode=document.querySelector(".level .value");
         let lvlUpPixel=1.9;
-        levelUpInterval=setInterval(function() {
+        const levelUpInterval=setInterval(function() {
             lvlUpPixel+=.1;
             levelUpValueNode.style.background="repeating-radial-gradient(orange, transparent " + lvlUpPixel + "px)";
             if(lvlUpPixel>15) {
@@ -1561,7 +1561,7 @@
     };
 
     // LOGIC TO UPDATE THE STATE OF GAME
-    var updateGameStatus = function() {
+    const updateGameStatus = function() {
         let mealIndex;
         let dangerIndex;
         let currentLocation=[row, column];
@@ -1598,12 +1598,11 @@
             if(snakeLife===0) {
                 gameOver();
             }
-            return;
         }
     };
 
     // LOGIC FOR UPDATING GAME PROGRESS BAR
-    var updateGameProgress = function() {
+    const updateGameProgress = function() {
         gameProgressBar.style.borderColor="#00ff0d"; // green
         gameProgressBar.style.background="#00ff0d"; // green
         if(isClassicMode() && snakeLength > 3) {
@@ -1617,13 +1616,12 @@
         if(isMazeMode()) {
             // maintain a maze path traversed count
             gameProgressBar.style.width=(gameProgressFactor*mazePathTraversed) + "%";
-            return;
         }
     };
 
     // LOGIC TO RESET GAME PROGRESS BAR
-    var resetGameProgress = function() {
-        gameProgressBar.style.width=0;
+    const resetGameProgress = function() {
+        gameProgressBar.style.width="0px";
         gameProgressBar.style.borderColor="transparent";
         gameProgressBar.style.background="transparent";
         if(isMazeMode()) {
@@ -1632,7 +1630,7 @@
     };
 
     // SET UP THE GAME
-	var init = function() {
+	const init = function() {
 		persistItem("unlockedModes", JSON.stringify(unlockedModes));
 		// selectedMode is important to be decided first as other calculations are dependent on it
 		selectedMode=retrieveItem("selectedMode")||selectedMode;
@@ -1646,7 +1644,7 @@
 		updateModeLevels();
 		displayModeInstructions();
 		updateLeaderboard();
-		updateSwipeAngleThresholds();
+		// updateSwipeAngleThresholds();
 		setGameProgressFactor();
 	};
 
