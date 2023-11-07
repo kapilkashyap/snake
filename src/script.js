@@ -162,7 +162,7 @@
         document.addEventListener("keydown", function(event) {
             event.stopPropagation();
             event.preventDefault();
-            if(event.keyCode===38 || event.keyCode===87) {
+            if(event.code==='ArrowUp' || event.code==='KeyW') {
                 if(event.shiftKey && (direction==="east" || direction==="west")) {
                     handleDoubleDirectionChange(["north", direction]);
                 }
@@ -173,7 +173,7 @@
                     handleDirectionChange("north");                        
                 }
             }
-            else if(event.keyCode===39 || event.keyCode===68) {
+            else if(event.code==='ArrowRight' || event.code==='KeyD') {
                 if(event.shiftKey && (direction==="north" || direction==="south")) {
                     handleDoubleDirectionChange(["east", direction]);
                 }
@@ -184,7 +184,7 @@
                     handleDirectionChange("east");
                 }
             }
-            else if(event.keyCode===40 || event.keyCode===83) {
+            else if(event.code==='ArrowDown' || event.code==='KeyS') {
                 if(event.shiftKey && (direction==="east" || direction==="west")) {
                     handleDoubleDirectionChange(["south", direction]);
                 }
@@ -195,7 +195,7 @@
                     handleDirectionChange("south");
                 }
             }
-            else if(event.keyCode===37 || event.keyCode===65) {
+            else if(event.code==='ArrowLeft' || event.code==='KeyA') {
                 if(event.shiftKey && (direction==="north" || direction==="south")) {
                     handleDoubleDirectionChange(["west", direction]);
                 }
@@ -206,13 +206,13 @@
                     handleDirectionChange("west");
                 }
             }
-            else if (event.keyCode===32 && (gameState==="stopped" || gameState===undefined)) {
+            else if (event.code==='Space' && (gameState==="stopped" || gameState===undefined)) {
                 playEventHandler();
             }
-            else if (event.keyCode===32 && gameState!=="over") {
+            else if (event.code==='Space' && gameState!=="over") {
                 pauseEventHandler();
             }
-            else if (event.keyCode===82 && interval===undefined) { //reset
+            else if (event.code==='KeyR' && interval===undefined) { //reset
                 resetEventHandler();
             }
         });
