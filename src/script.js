@@ -303,10 +303,10 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 
     const pauseEventHandler = function() {
         if (gameState!=="paused" && gameState!=="lifeLost") {
-            clearInterval(interval);
-            clearInterval(timerInterval);
-            clearInterval(scoreInterval);
-            clearInterval(flickerInterval);
+            interval = clearAndResetInterval(interval);
+            timerInterval = clearAndResetInterval(timerInterval);
+            scoreInterval = clearAndResetInterval(scoreInterval);
+            flickerInterval = clearAndResetInterval(flickerInterval);
             setGameState("paused");
             updateMessage(messages.RESUME);
             if(isPortableMode) {
@@ -352,8 +352,8 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 
     const defaultSettings = function() {
         updateRowColumnDirection();
-        interval=undefined;
-        clearInterval(flickerInterval);
+        interval = undefined;
+        flickerInterval = clearAndResetInterval(flickerInterval);
         meals=[];
 
         if(gameState==="over") {
@@ -415,8 +415,8 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
     // INTERVALS
     const setSpeedInterval = function(_speed) {
         // making sure the interval is cleared before setting a new interval
-        clearInterval(interval);
-        interval=setInterval(function() {
+        interval = clearAndResetInterval(interval);
+        interval = setInterval(function() {
             if(movesQueue.length>0) {
                 prevDirection=direction;
                 setDirection(movesQueue.pop());
@@ -440,6 +440,11 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
     };
 
     // UTILITY METHODS
+    const clearAndResetInterval = function(intervalId) {
+        clearInterval(intervalId);
+        return undefined;
+    };
+
     const capitalize = function(s) {
         return s[0].toUpperCase() + s.slice(1);   
     };
@@ -798,7 +803,7 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
         let paths=document.querySelectorAll(".path");
         flickerInterval=setInterval(function() {
             if(flickerCount===-1) {
-                clearInterval(flickerInterval);
+                flickerInterval = clearAndResetInterval(flickerInterval);
                 return;
             }
             paths.forEach(function (path) {
@@ -811,13 +816,13 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
     // LOGIC TO INDUCE A PAUSE BEFORE CONTINUING
     const inducePause = function(milliseconds) {
        if(gameState!=="paused") {
-            clearInterval(interval);
-            setGameState("paused");
+           interval = clearAndResetInterval(interval);
+           setGameState("paused");
         }
-        let pauseInterval=setInterval(function() {
+        const pauseInterval = setInterval(function() {
             setSpeedInterval();
             setGameState("play");
-            clearInterval(pauseInterval);
+            clearAndResetInterval(pauseInterval);
         }, milliseconds || 1500);
     };
 
@@ -1301,9 +1306,9 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
     // LOGIC FOR GAME OVER
     const gameOver = function(count, msg, bypassSnakeLife) {
         bypassSnakeLife=(bypassSnakeLife===undefined) ? false : bypassSnakeLife;
-        clearInterval(interval);
-        clearInterval(timerInterval);
-        clearInterval(scoreInterval);
+        interval = clearAndResetInterval(interval);
+        timerInterval = clearAndResetInterval(timerInterval);
+        scoreInterval = clearAndResetInterval(scoreInterval);
         induceFlickerEffect(count);
 
         if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
@@ -1552,12 +1557,12 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
     const triggerLevelUp = function() {
         const levelUpValueNode=document.querySelector(".level .value");
         let lvlUpPixel=1.9;
-        const levelUpInterval=setInterval(function() {
+        const levelUpInterval = setInterval(function() {
             lvlUpPixel+=.1;
             levelUpValueNode.style.background="repeating-radial-gradient(orange, transparent " + lvlUpPixel + "px)";
             if(lvlUpPixel>15) {
                 levelUpValueNode.style.background="";
-                clearInterval(levelUpInterval);
+                clearAndResetInterval(levelUpInterval);
             }
         }, 20);
     };
