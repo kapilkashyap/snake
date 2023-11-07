@@ -301,10 +301,10 @@
 
     const pauseEventHandler = function() {
         if (gameState!=="paused" && gameState!=="lifeLost") {
-            interval=clearInterval(interval);
-            timerInterval=clearInterval(timerInterval);
-            scoreInterval=clearInterval(scoreInterval);
-            flickerInterval=clearInterval(flickerInterval);
+            clearInterval(interval);
+            clearInterval(timerInterval);
+            clearInterval(scoreInterval);
+            clearInterval(flickerInterval);
             setGameState("paused");
             updateMessage(messages.RESUME);
             if(isPortableMode) {
@@ -351,7 +351,7 @@
     const defaultSettings = function() {
         updateRowColumnDirection();
         interval=undefined;
-        flickerInterval=clearInterval(flickerInterval);
+        clearInterval(flickerInterval);
         meals=[];
 
         if(gameState==="over") {
@@ -413,7 +413,7 @@
     // INTERVALS
     const setSpeedInterval = function(_speed) {
         // making sure the interval is cleared before setting a new interval
-        interval=clearInterval(interval);
+        clearInterval(interval);
         interval=setInterval(function() {
             if(movesQueue.length>0) {
                 prevDirection=direction;
@@ -796,7 +796,7 @@
         let paths=document.querySelectorAll(".path");
         flickerInterval=setInterval(function() {
             if(flickerCount===-1) {
-                flickerInterval=clearInterval(flickerInterval);
+                clearInterval(flickerInterval);
                 return;
             }
             paths.forEach(function (path) {
@@ -809,13 +809,13 @@
     // LOGIC TO INDUCE A PAUSE BEFORE CONTINUING
     const inducePause = function(milliseconds) {
        if(gameState!=="paused") {
-            interval=clearInterval(interval);
+            clearInterval(interval);
             setGameState("paused");
         }
         let pauseInterval=setInterval(function() {
             setSpeedInterval();
             setGameState("play");
-            pauseInterval=clearInterval(pauseInterval);
+            clearInterval(pauseInterval);
         }, milliseconds || 1500);
     };
 
@@ -1299,9 +1299,9 @@
     // LOGIC FOR GAME OVER
     const gameOver = function(count, msg, bypassSnakeLife) {
         bypassSnakeLife=(bypassSnakeLife===undefined) ? false : bypassSnakeLife;
-        interval=clearInterval(interval);
-        timerInterval=clearInterval(timerInterval);
-        scoreInterval=clearInterval(scoreInterval);
+        clearInterval(interval);
+        clearInterval(timerInterval);
+        clearInterval(scoreInterval);
         induceFlickerEffect(count);
 
         if(isMazeMode() && document.querySelector(".maze-mode .head").classList.contains("end")) {
