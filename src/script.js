@@ -833,15 +833,15 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 	const checkGameOver = function () {
 		if (isClassicMode() && speed < speedCutOff) {
 			level--;
-			gameOver(10, messages.WELL_DONE, true);
+			gameOver(10, messages.WELL_DONE, true, true);
 			document.querySelectorAll('.food').forEach(function (node) {
 				removeEntityFromNode(node, 'food');
 			});
 			return true;
 		}
-		//         if(isChallengeMode()) {
-		//             return document.querySelectorAll(".game-arena-display div.empty:not(.head)").length===0;
-		//         }
+		// if(isChallengeMode()) {
+		// 		return document.querySelectorAll(".game-arena-display div.empty:not(.head)").length===0;
+		// }
 		return false;
 	};
 
@@ -1287,12 +1287,17 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 	};
 
 	// LOGIC FOR GAME OVER
-	const gameOver = function (count, msg, bypassSnakeLife) {
+	const gameOver = function (count, msg, bypassSnakeLife, cleanup) {
 		bypassSnakeLife = bypassSnakeLife === undefined ? false : bypassSnakeLife;
 		interval = clearAndResetInterval(interval);
 		timerInterval = clearAndResetInterval(timerInterval);
 		scoreInterval = clearAndResetInterval(scoreInterval);
 		induceFlickerEffect(count);
+
+		if (cleanup) {
+			removeTrail();
+			removeCrossHair();
+		}
 
 		if (isMazeMode() && document.querySelector('.maze-mode .head').classList.contains('end')) {
 			bypassSnakeLife = true;
