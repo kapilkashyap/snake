@@ -1,6 +1,6 @@
 /* styles for game layout - start */
 html .dark, body .dark {
-    color: #fffb;
+    color: #fff;
     background: radial-gradient(circle at 50% 33%, #999, #222);
 }
 body.dark .link a {
@@ -27,9 +27,9 @@ body.dark .game-arena .game-arena-display {
     justify-content: center;
 }
 body.dark .game-arena .instructions {
-    border: 1px solid #3336;
+    border: 12px solid #3334;
     background: #777;
-    box-shadow: 0 10px 6px -6px #333b;
+    box-shadow: 0 18px 6px -6px #333b;
 }
 body.dark .game-arena .instructions .selectLevel .levels .level {
     border: 1px solid #3336;
