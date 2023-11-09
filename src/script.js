@@ -1208,7 +1208,7 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 	};
 
 	const displayModeInstructions = function () {
-		document.querySelectorAll('.instructions .details ol').forEach(function (node) {
+		document.querySelectorAll('.instructions .details .instruction').forEach(function (node) {
 			if (node.classList.contains(selectedMode + '-mode')) {
 				node.classList.add('show');
 				node.classList.remove('hide');
