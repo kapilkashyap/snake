@@ -74,6 +74,9 @@ body.portable-device .game-stats div.life span {
     margin-right: 2px;
     color: transparent;
     text-shadow: 0 0 0 #9996;
+    font-family: serif;
+    font-size: 14px;
+    line-height: 14px;
 }
 .game-stats div.life span.available {
     text-shadow: 0 0 0 red;
@@ -418,12 +421,12 @@ body.portable-device .game-stats div.life span {
     justify-content: flex-end;
     flex-direction: column;
     flex-grow: 9;
+    font-size: 10px;
 }
 .copyright-details .info {
     display: flex;
     width: 400px;
     justify-content: space-between;
-    font-size: 7px;
 }
 .copyright-details .info div {
     display: flex;
