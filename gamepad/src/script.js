@@ -1,3 +1,5 @@
+import gameConfig from '../../assets/config.js';
+
 /**
  * @author: Kapil Kashyap
  * This is a WIP and will be configuration driven in later versions
@@ -82,7 +84,7 @@ const init = () => {
                 resolve(xmlHttp.responseText);
             }
         };
-        xmlHttp.open("GET", "gamepad/direction-buttons.html", true);
+        xmlHttp.open("GET", `${gameConfig.isDevMode ? '' : 'dist/'}gamepad/direction-buttons.html`, true);
         xmlHttp.send();
     });
     const p2 = new Promise((resolve) => {
@@ -92,7 +94,7 @@ const init = () => {
                 resolve(xmlHttp.responseText);
             }
         };
-        xmlHttp.open("GET", "gamepad/action-buttons.html", true);
+        xmlHttp.open("GET", `${gameConfig.isDevMode ? '' : 'dist/'}gamepad/action-buttons.html`, true);
         xmlHttp.send();
     });
     Promise.all([p1, p2]).then((values) => {
