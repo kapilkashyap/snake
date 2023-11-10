@@ -5,6 +5,6 @@
  - Each mode has levels
  - Complete challenges of each level to unlock new levels within a mode
  
- You can play the game here - https://kapilkashyap.github.io/snake/play.html
+ You can play the game here - https://kapilkashyap.github.io/snake/index.html
  
  Hope you like the game! :)
