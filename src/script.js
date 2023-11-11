@@ -1,4 +1,5 @@
 import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinates.js';
+import config from "../assets/config.js";
 
 /**
  * @author: Kapil Kashyap
@@ -40,24 +41,24 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 	let selectedMode = availableModes[0];
 
 	// TOUCH EVENT VARIABLES
-	// let isGesture=false;
-	// let startX;
-	// let startY;
-	// let endX;
-	// let endY;
-	// let deltaX;
-	// let deltaY;
-	// let startTime;
-	// let elapsedTime;
-	// let swipeDirection;
-	// let swipeAngle;
-	// let swipeAngleMinThreshold;
-	// let swipeAngleMaxThreshold;
-	// let thresholdPassed=false;
-	// let swipeThreshold=25; //required minimum distance traveled to be considered swipe
-	// let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right-angled movement
-	// let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right-angled movement
-	// let allowedTime=300; //maximum time allowed to travel that distance
+	let isGesture=false;
+	let startX;
+	let startY;
+	let endX;
+	let endY;
+	let deltaX;
+	let deltaY;
+	let startTime;
+	let elapsedTime;
+	let swipeDirection;
+	let swipeAngle;
+	let swipeAngleMinThreshold;
+	let swipeAngleMaxThreshold;
+	let thresholdPassed=false;
+	let swipeThreshold=25; //required minimum distance traveled to be considered swipe
+	let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right-angled movement
+	let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right-angled movement
+	let allowedTime=300; //maximum time allowed to travel that distance
 
 	// GAME CONFIG
 	let interval;
@@ -175,92 +176,178 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 			node.innerHTML = '&#9829;';
 		});
 
-		document.addEventListener('keydown', function (event) {
-			event.stopPropagation();
-			event.preventDefault();
-			if (event.code === 'ArrowUp' || event.code === 'KeyW') {
-				if (event.shiftKey && (direction === 'east' || direction === 'west')) {
-					handleDoubleDirectionChange(['north', direction]);
-				} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
-					handleDoubleDirectionChange(['north', direction === 'east' ? 'west' : 'east']);
-				} else {
-					handleDirectionChange('north');
+		if (!isPortableMode || isPortableMode && config.useGamepad) {
+			document.addEventListener('keydown', function (event) {
+				event.stopPropagation();
+				event.preventDefault();
+				if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+					if (event.shiftKey && (direction === 'east' || direction === 'west')) {
+						handleDoubleDirectionChange(['north', direction]);
+					} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
+						handleDoubleDirectionChange(['north', direction === 'east' ? 'west' : 'east']);
+					} else {
+						handleDirectionChange('north');
+					}
+				} else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
+					if (event.shiftKey && (direction === 'north' || direction === 'south')) {
+						handleDoubleDirectionChange(['east', direction]);
+					} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
+						handleDoubleDirectionChange(['east', direction === 'north' ? 'south' : 'north']);
+					} else {
+						handleDirectionChange('east');
+					}
+				} else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
+					if (event.shiftKey && (direction === 'east' || direction === 'west')) {
+						handleDoubleDirectionChange(['south', direction]);
+					} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
+						handleDoubleDirectionChange(['south', direction === 'east' ? 'west' : 'east']);
+					} else {
+						handleDirectionChange('south');
+					}
+				} else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
+					if (event.shiftKey && (direction === 'north' || direction === 'south')) {
+						handleDoubleDirectionChange(['west', direction]);
+					} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
+						handleDoubleDirectionChange(['west', direction === 'north' ? 'south' : 'north']);
+					} else {
+						handleDirectionChange('west');
+					}
+				} else if (event.code === 'Space' && (gameState === 'stopped' || gameState === undefined)) {
+					playEventHandler();
+				} else if (event.code === 'Space' && gameState !== 'over') {
+					pauseEventHandler();
+				} else if (event.code === 'KeyR' && interval === undefined) {
+					//reset
+					resetEventHandler();
 				}
-			} else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
-				if (event.shiftKey && (direction === 'north' || direction === 'south')) {
-					handleDoubleDirectionChange(['east', direction]);
-				} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
-					handleDoubleDirectionChange(['east', direction === 'north' ? 'south' : 'north']);
-				} else {
-					handleDirectionChange('east');
-				}
-			} else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
-				if (event.shiftKey && (direction === 'east' || direction === 'west')) {
-					handleDoubleDirectionChange(['south', direction]);
-				} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
-					handleDoubleDirectionChange(['south', direction === 'east' ? 'west' : 'east']);
-				} else {
-					handleDirectionChange('south');
-				}
-			} else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
-				if (event.shiftKey && (direction === 'north' || direction === 'south')) {
-					handleDoubleDirectionChange(['west', direction]);
-				} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
-					handleDoubleDirectionChange(['west', direction === 'north' ? 'south' : 'north']);
-				} else {
-					handleDirectionChange('west');
-				}
-			} else if (event.code === 'Space' && (gameState === 'stopped' || gameState === undefined)) {
-				playEventHandler();
-			} else if (event.code === 'Space' && gameState !== 'over') {
-				pauseEventHandler();
-			} else if (event.code === 'KeyR' && interval === undefined) {
-				//reset
-				resetEventHandler();
-			}
-		});
+			});
+		}
 
 		if (isPortableMode) {
-			document.querySelector('.gamepad').classList.remove('hide');
 			document.querySelector('.game-actions').classList.remove('hide');
+			if (config.useGamepad) {
+				document.querySelector('.gamepad').classList.remove('hide');
+			} else {
+				updateActionButtonLabel();
+				// Gestures
+				document.querySelector(".body-container").addEventListener("touchstart", function(event) {
+					let touchObj=event.changedTouches[0];
+					startX=touchObj.pageX;
+					startY=touchObj.pageY;
+					// record time when finger first makes contact with surface
+					startTime=new Date().getTime();
+					isGesture=true;
+					thresholdPassed=false;
+					event.preventDefault();
+				}, { passive: false });
+
+				document.querySelector(".body-container").addEventListener("touchend", function(event) {
+					if(isGesture) {
+						let touchObj=event.changedTouches[0];
+						endX=touchObj.pageX;
+						endY=touchObj.pageY;
+
+						// get horizontal dist traveled by finger while in contact with surface
+						deltaX=endX - startX;
+						// get vertical dist traveled by finger while in contact with surface
+						deltaY=endY - startY;
+						// get time elapsed
+						elapsedTime=new Date().getTime() - startTime;
+						// calculate the angle of swipe
+						swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
+						thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
+						if (elapsedTime <= allowedTime) {
+							//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
+							if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
+								if(swipeAngle<swipeAngleMinThreshold) {
+									swipeDirection=["east"];
+								}
+								else if(swipeAngle>swipeAngleMaxThreshold) {
+									swipeDirection=["north"];
+								}
+								else if(thresholdPassed) {
+									swipeDirection=["east", "north"];
+								}
+							}
+							else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
+								if(swipeAngle<swipeAngleMinThreshold) {
+									swipeDirection=["west"];
+								}
+								else if(swipeAngle>swipeAngleMaxThreshold) {
+									swipeDirection=["north"];
+								}
+								else if(thresholdPassed) {
+									swipeDirection=["west", "north"];
+								}
+							}
+							else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
+								if(swipeAngle<swipeAngleMinThreshold) {
+									swipeDirection=["west"];
+								}
+								else if(swipeAngle>swipeAngleMaxThreshold) {
+									swipeDirection=["south"];
+								}
+								else if(thresholdPassed) {
+									swipeDirection=["west", "south"];
+								}
+							}
+							else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
+								if(swipeAngle<swipeAngleMinThreshold) {
+									swipeDirection=["east"];
+								}
+								else if(swipeAngle>swipeAngleMaxThreshold) {
+									swipeDirection=["south"];
+								}
+								else if(thresholdPassed) {
+									swipeDirection=["east", "south"];
+								}
+							}
+							handleGesture(swipeDirection);
+						}
+						isGesture=false;
+					}
+					event.preventDefault();
+				}, { passive: false });
+			}
+
+			document.querySelector('.game-actions .play-pause').addEventListener(
+				'touchstart',
+				function (event) {
+					event.stopPropagation();
+					event.preventDefault();
+
+					disableResetButton();
+					if (gameState === 'stopped' || gameState === undefined) {
+						playEventHandler();
+					} else if (gameState !== 'over') {
+						pauseEventHandler();
+					}
+				},
+				{ passive: false }
+			);
+
+			document.querySelector('.game-actions .reset').addEventListener(
+				'touchstart',
+				function (event) {
+					event.stopPropagation();
+					event.preventDefault();
+
+					if (this.querySelector('button').disabled) {
+						return;
+					}
+
+					if (interval === undefined) {
+						//reset
+						resetEventHandler();
+					}
+				},
+				{ passive: false }
+			);
 		}
 
 		updateActionButtonLabel();
 
-		document.querySelector('.game-actions .play-pause').addEventListener(
-			'touchstart',
-			function (event) {
-				event.stopPropagation();
-				event.preventDefault();
-
-				disableResetButton();
-				if (gameState === 'stopped' || gameState === undefined) {
-					playEventHandler();
-				} else if (gameState !== 'over') {
-					pauseEventHandler();
-				}
-			},
-			{ passive: false }
-		);
-
-		document.querySelector('.game-actions .reset').addEventListener(
-			'touchstart',
-			function (event) {
-				event.stopPropagation();
-				event.preventDefault();
-
-				if (this.querySelector('button').disabled) {
-					return;
-				}
-
-				if (interval === undefined) {
-					//reset
-					resetEventHandler();
-				}
-			},
-			{ passive: false }
-		);
-
+		// Pause the games as soon as we navigate away from the browser or the tab
 		window.addEventListener(
 			'blur',
 			function () {
@@ -270,6 +357,20 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 			},
 			{ passive: false }
 		);
+	};
+
+	const handleGesture = function(gesture) {
+		if(gesture) {
+			if(gesture.length===2) {
+				// if snake is moving horizontally, swap gesture directions
+				let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
+				movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
+				movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
+			}
+			else {
+				handleDirectionChange(gesture[0]);
+			}
+		}
 	};
 
 	const handleDoubleDirectionChange = function (doubleDirection) {
@@ -533,10 +634,10 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 		document.querySelector('.button.play-pause button').innerHTML = lbl || messages.PLAY_BUTTON_LABEL;
 	};
 
-	// const updateSwipeAngleThresholds = function() {
-	//     swipeAngleMinThreshold=isMazeMode()?45:defaultSwipeAngleMinThreshold;
-	//     swipeAngleMaxThreshold=isMazeMode()?45:defaultSwipeAngleMaxThreshold;
-	// };
+	const updateSwipeAngleThresholds = function() {
+	    swipeAngleMinThreshold = isMazeMode() ? 45 : defaultSwipeAngleMinThreshold;
+	    swipeAngleMaxThreshold = isMazeMode() ? 45 : defaultSwipeAngleMaxThreshold;
+	};
 
 	const disableResetButton = function (isDisabled) {
 		isDisabled = isDisabled === undefined;
@@ -1112,7 +1213,7 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 		updateLeaderboard();
 		setGameProgressFactor();
 		resetGameProgress();
-		// updateSwipeAngleThresholds();
+		updateSwipeAngleThresholds();
 	};
 
 	const levelSelectionEventHandler = function (event) {
@@ -1622,7 +1723,7 @@ import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinate
 		updateModeLevels();
 		displayModeInstructions();
 		updateLeaderboard();
-		// updateSwipeAngleThresholds();
+		updateSwipeAngleThresholds();
 		setGameProgressFactor();
 	};
 
