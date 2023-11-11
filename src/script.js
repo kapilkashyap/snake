@@ -413,7 +413,9 @@ import config from "../assets/config.js";
 		setGameState('play');
 		updateMessage(messages.PAUSE);
 		hideInstructions();
-		isPortableMode && updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
+		if (isPortableMode) {
+			updateActionButtonLabel(messages.PAUSE_BUTTON_LABEL);
+		}
 	};
 
 	const pauseEventHandler = function () {
@@ -431,7 +433,9 @@ import config from "../assets/config.js";
 		} else if (gameState === 'paused' || gameState === 'lifeLost') {
 			removeTrail();
 			if (gameState === 'lifeLost') {
-				!isMazeMode() && clearNodes();
+				if (!isMazeMode()) {
+					clearNodes();
+				}
 				defaultSettings();
 				generateFood();
 			}
@@ -519,7 +523,9 @@ import config from "../assets/config.js";
 		} else if (_directionChangedTo === 'west') {
 			snakeBodyCurveClass = prevDirection === 'south' ? 'se' : prevDirection === 'north' ? 'ne' : null;
 		}
-		snakeBodyCurveClass && addEntity([row, column], snakeBodyCurveClass);
+		if (snakeBodyCurveClass) {
+			addEntity([row, column], snakeBodyCurveClass);
+		}
 	};
 
 	// INTERVALS
@@ -754,7 +760,9 @@ import config from "../assets/config.js";
 		flag = flag === undefined ? true : flag;
 		document.querySelector('.instructions').classList.remove('show', 'hide');
 		document.querySelector('.instructions').classList.add(flag ? 'hide' : 'show');
-		!flag && updateModeLevels();
+		if (!flag) {
+			updateModeLevels();
+		}
 	};
 
 	const nodeSelection = function (entry) {
@@ -1381,11 +1389,12 @@ import config from "../assets/config.js";
 							leaderBoardRow += "<div class='column'>" + stat[key] + '</div>';
 							// leaderBoardRow += "<div class='column'>";
 							// if(key!=="timestamp") {
-							//     leaderBoardRow += stat[key];
+							//   leaderBoardRow += stat[key];
 							// }
 							// else {
-							//     let dt = new Date(stat[key]);
-							//     leaderBoardRow += dt.getFullYear() + "-" + (dt.getMonth()+1 < 10 ? "0" :  dt.getMonth()+1) + "-" + dt.getDate();
+							//   let dt = new Date(stat[key]);
+							//   leaderBoardRow += dt.getFullYear() + "-" + (dt.getMonth()+1 < 10
+							//     ? "0" : dt.getMonth()+1) + "-" + dt.getDate();
 							// }
 							// leaderBoardRow +=  "</div>";
 						}
@@ -1435,11 +1444,17 @@ import config from "../assets/config.js";
 			setGameState('over');
 			updateLife();
 			updateMessage(msg || messages.GAME_OVER + messages.SPACE + messages.RESET);
-			isPortableMode && toggleHide('play-pause', true);
+			if (isPortableMode) {
+				toggleHide("play-pause", true);
+			}
 			// specific check for maze mode as we want to update the game stats only when maze is completed successfully
-			!isMazeMode() && saveGameStats();
+			if (!isMazeMode()) {
+				saveGameStats();
+			}
 		}
-		isPortableMode && disableResetButton(false);
+		if (isPortableMode) {
+			disableResetButton(false);
+		}
 	};
 
 	// SNAKE MOVE LOGIC
@@ -1601,7 +1616,9 @@ import config from "../assets/config.js";
 		updateGameStatus();
 		updateGameProgress();
 		// increment the count of maze path traversed
-		isMazeMode() && mazePathTraversed++;
+		if (isMazeMode()) {
+			mazePathTraversed++;
+		}
 		// increment the count of challenge arena covered
 		if (isChallengeMode()) {
 			if (document.querySelectorAll('.game-arena-display div.path').length === totalRectsCountChallengeMode) {
