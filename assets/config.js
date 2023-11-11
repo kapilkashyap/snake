@@ -1,3 +1,4 @@
 export default {
-  isDevMode: true
-}
+  isDevMode: true,
+  useGamepad: false
+};
