@@ -31,6 +31,9 @@ body.dark .game-arena .instructions {
     background: #777;
     box-shadow: 0 18px 6px -6px #333b;
 }
+body.dark.portable-device .game-arena .instructions {
+    border: 12px solid #3336;
+}
 body.dark .game-arena .instructions .selectLevel .levels .level {
     border: 1px solid #3336;
 }
@@ -183,10 +186,10 @@ body.dark .tutorial-overlay .image-selection .indicator {
 button {
     background-color: #6669;
     border-color: #6669;
-    color: #fff9;
+    color: #fff;
 }
 button:disabled {
-    color: #fff3;
+    color: #fff5;
 }
 /* styles for button - end */
 
