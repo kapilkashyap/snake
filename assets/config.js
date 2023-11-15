@@ -1,4 +1,5 @@
 export default {
   isDevMode: true,
-  useGamepad: false
+  useGamepad: false,
+  topScoreLimit: 5
 };
