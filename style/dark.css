@@ -34,9 +34,7 @@ body.dark .game-arena .instructions {
 body.dark.portable-device .game-arena .instructions {
     border: 12px solid #3336;
 }
-body.dark .game-arena .instructions .selectLevel .levels .level {
-    border: 1px solid #3336;
-}
+/* body.dark .game-arena .instructions .selectLevel .levels .level {} */
 body.dark .game-arena .instructions .selectMode .mode {
     border: 1px solid #3336;
 }
@@ -184,9 +182,9 @@ body.dark .tutorial-overlay .image-selection .indicator {
 
 /* styles for button - start */
 button {
-    background-color: #6669;
-    border-color: #6669;
+    background: #666;
     color: #fff;
+    width: 60px;
 }
 button:disabled {
     color: #fff5;
