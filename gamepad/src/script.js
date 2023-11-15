@@ -14,6 +14,10 @@ const init = () => {
             document.dispatchEvent(new KeyboardEvent(dispatchEventName, {
                 ...dispatchEventObj, ctrlKey: isCtrlKey, shiftKey: isShiftKey
             }));
+            setTimeout(() => {
+                isCtrlKey = false;
+                isShiftKey = false;
+            }, 0);
         }, true);
     };
 
@@ -49,22 +53,16 @@ const init = () => {
         { 'code': 'ArrowLeft' }
     );
 
-    document.querySelector('.action-buttons .action-button.x .button').addEventListener('touchstart', () => {
+    document.querySelector('.action-buttons .action-button.x .button').addEventListener('click', () => {
+        isShiftKey = false;
         isCtrlKey = true;
         // navigator.vibrate(75);
     }, true);
 
-    document.querySelector('.action-buttons .action-button.x .button').addEventListener('touchend', () => {
+    document.querySelector('.action-buttons .action-button.y .button').addEventListener('click', () => {
         isCtrlKey = false;
-    }, true);
-
-    document.querySelector('.action-buttons .action-button.y .button').addEventListener('touchstart', () => {
         isShiftKey = true;
         // navigator.vibrate(75);
-    }, true);
-
-    document.querySelector('.action-buttons .action-button.y .button').addEventListener('touchend', () => {
-        isShiftKey = false;
     }, true);
 };
 
@@ -76,7 +74,7 @@ const init = () => {
                 resolve(xmlHttp.responseText);
             }
         };
-        xmlHttp.open("GET", `${gameConfig.isDevMode ? '' : 'dist/'}gamepad/direction-buttons.html`, true);
+        xmlHttp.open("GET", `${gameConfig.isDevMode ? 'gamepad' : 'dist'}/direction-buttons.html`, true);
         xmlHttp.send();
     });
     const p2 = new Promise((resolve) => {
@@ -86,7 +84,7 @@ const init = () => {
                 resolve(xmlHttp.responseText);
             }
         };
-        xmlHttp.open("GET", `${gameConfig.isDevMode ? '' : 'dist/'}gamepad/action-buttons.html`, true);
+        xmlHttp.open("GET", `${gameConfig.isDevMode ? 'gamepad' : 'dist'}/action-buttons.html`, true);
         xmlHttp.send();
     });
     Promise.all([p1, p2]).then((values) => {
