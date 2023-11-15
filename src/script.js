@@ -41,7 +41,7 @@ import config from "../assets/config.js";
 	let selectedMode = availableModes[0];
 
 	// TOUCH EVENT VARIABLES
-	let isGesture=false;
+	let isGesture = false;
 	let startX;
 	let startY;
 	let endX;
@@ -125,7 +125,7 @@ import config from "../assets/config.js";
 		LEVEL_UNLOCKED: 'level unlocked!',
 		AMAZING: 'Amazing',
 		ALL_LEVELS_COMPLETED: 'all levels completed!',
-		TOP_3_SCORES: 'Your top 3 scores will appear here...',
+		TOP_N_SCORES: `Your top ${config.topScoreLimit} scores will appear here...`,
 		PLAY_BUTTON_LABEL: 'Play',
 		PAUSE_BUTTON_LABEL: 'Pause',
 		DISCLAIMER: 'Works best on desktop.',
@@ -1344,68 +1344,50 @@ import config from "../assets/config.js";
 	};
 
 	// STATS AND TIMINGS DISPLAY
-	const updateLeaderboard = function (limit) {
-		limit = limit || 3;
+	const updateLeaderboard = function () {
 		let leaderboard = document.querySelector('.leaderboard');
-		let stats = JSON.parse(retrieveItem('snake-game-stats'));
+		if (!isPortableMode) {
+			leaderboard.classList.remove('hide');
+			let stats = JSON.parse(retrieveItem('snake-game-stats'));
 
-		// if stats is not null, then filter stats based on the selected game mode
-		if (stats !== null) {
-			stats = stats.filter(function (stat) {
-				return stat.selectedMode === selectedMode;
-			});
-		}
-
-		// check if we have entries for the selected game mode after filtering
-		if (stats && stats.length > 0) {
-			let keys = Object.keys(stats[0]);
-			let leaderBoardRow = "<div class='row'>";
-			//leaderBoardRow += "<div class='padded'></div>";
-			leaderBoardRow += "<div class='column head'>S.No</div>";
-			keys.forEach(function (key) {
-				if (key !== 'timestamp' && key !== 'time') {
-					leaderBoardRow += "<div class='column head'>" + key + '</div>';
-					//                     leaderBoardRow += "<div class='column head'>";
-					//                     if(key!=="timestamp") {
-					//                         leaderBoardRow += key;
-					//                     }
-					//                     else {
-					//                         leaderBoardRow += "played on";
-					//                     }
-					//                     leaderBoardRow +=  "</div>";
-				}
-			});
-			//leaderBoardRow += "<div class='padded'></div>";
-			leaderBoardRow += '</div>';
-
-			for (let stat, index = 0; index < limit; index++) {
-				stat = stats[index];
-				if (stat) {
-					leaderBoardRow += "<div class='row'>";
-					//leaderBoardRow += "<div class='padded'></div>";
-					leaderBoardRow += "<div class='column'>" + (index + 1) + '.</div>';
-					keys.forEach(function (key) {
-						if (key !== 'timestamp' && key !== 'time') {
-							leaderBoardRow += "<div class='column'>" + stat[key] + '</div>';
-							// leaderBoardRow += "<div class='column'>";
-							// if(key!=="timestamp") {
-							//   leaderBoardRow += stat[key];
-							// }
-							// else {
-							//   let dt = new Date(stat[key]);
-							//   leaderBoardRow += dt.getFullYear() + "-" + (dt.getMonth()+1 < 10
-							//     ? "0" : dt.getMonth()+1) + "-" + dt.getDate();
-							// }
-							// leaderBoardRow +=  "</div>";
-						}
-					});
-					//leaderBoardRow += "<div class='padded'></div>";
-					leaderBoardRow += '</div>';
-				}
+			// if stats is not null, then filter stats based on the selected game mode
+			if (stats !== null) {
+				stats = stats.filter(function (stat) {
+					return stat.selectedMode === selectedMode;
+				});
 			}
-			leaderboard.innerHTML = leaderBoardRow;
+
+			// check if we have entries for the selected game mode after filtering
+			if (stats && stats.length > 0) {
+				let keys = Object.keys(stats[0]);
+				let leaderBoardRow = "<div class='row'>";
+				leaderBoardRow += "<div class='column head'>S.No</div>";
+				keys.forEach(function (key) {
+					if (key !== 'timestamp' && key !== 'time') {
+						leaderBoardRow += "<div class='column head'>" + key + '</div>';
+					}
+				});
+				leaderBoardRow += '</div>';
+
+				for (let stat, index = 0; index < config.topScoreLimit; index++) {
+					stat = stats[index];
+					if (stat) {
+						leaderBoardRow += "<div class='row'>";
+						leaderBoardRow += "<div class='column'>" + (index + 1) + '.</div>';
+						keys.forEach(function (key) {
+							if (key !== 'timestamp' && key !== 'time') {
+								leaderBoardRow += "<div class='column'>" + stat[key] + '</div>';
+							}
+						});
+						leaderBoardRow += '</div>';
+					}
+				}
+				leaderboard.innerHTML = leaderBoardRow;
+			} else {
+				leaderboard.innerHTML = "<div class='message'>" + messages.TOP_N_SCORES + '</div>';
+			}
 		} else {
-			leaderboard.innerHTML = "<div class='message'>" + messages.TOP_3_SCORES + '</div>';
+			leaderboard.classList.add('hide');
 		}
 	};
 
