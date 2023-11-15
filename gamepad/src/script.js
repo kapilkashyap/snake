@@ -5,9 +5,15 @@ import gameConfig from '../../assets/config.js';
  * This is a WIP and will be configuration driven in later versions
  */
 const init = () => {
+    let isCtrlKey = false;
+    let isShiftKey = false;
+
     const addTouchEventListener = (selector, eventName, dispatchEventName, dispatchEventObj) => {
         document.querySelector(selector).addEventListener(eventName, () => {
-            document.dispatchEvent(new KeyboardEvent(dispatchEventName, dispatchEventObj));
+            // navigator.vibrate(75);
+            document.dispatchEvent(new KeyboardEvent(dispatchEventName, {
+                ...dispatchEventObj, ctrlKey: isCtrlKey, shiftKey: isShiftKey
+            }));
         }, true);
     };
 
@@ -43,37 +49,23 @@ const init = () => {
         { 'code': 'ArrowLeft' }
     );
 
-    // top-button
-    addTouchEventListener(
-        '.action-buttons .row .top .button',
-        'click',
-        'keydown',
-        { 'ctrlKey': true, 'code': 'ArrowUp' }
-    );
+    document.querySelector('.action-buttons .action-button.x .button').addEventListener('touchstart', () => {
+        isCtrlKey = true;
+        // navigator.vibrate(75);
+    }, true);
 
-    // right-button
-    addTouchEventListener(
-        '.action-buttons .row .right .button',
-        'click',
-        'keydown',
-        { 'ctrlKey': true, 'code': 'ArrowRight' }
-    );
+    document.querySelector('.action-buttons .action-button.x .button').addEventListener('touchend', () => {
+        isCtrlKey = false;
+    }, true);
 
-    // down-button
-    addTouchEventListener(
-        '.action-buttons .row .down .button',
-        'click',
-        'keydown',
-        { 'ctrlKey': true, 'code': 'ArrowDown' }
-    );
+    document.querySelector('.action-buttons .action-button.y .button').addEventListener('touchstart', () => {
+        isShiftKey = true;
+        // navigator.vibrate(75);
+    }, true);
 
-    // left-button
-    addTouchEventListener(
-        '.action-buttons .row .left .button',
-        'click',
-        'keydown',
-        { 'ctrlKey': true, 'code': 'ArrowLeft' }
-    );
+    document.querySelector('.action-buttons .action-button.y .button').addEventListener('touchend', () => {
+        isShiftKey = false;
+    }, true);
 };
 
 (() => {
@@ -98,7 +90,10 @@ const init = () => {
         xmlHttp.send();
     });
     Promise.all([p1, p2]).then((values) => {
-        document.querySelector(".gamepad").innerHTML = values.join("");
-        init();
+        const gamepad = document.querySelector(".gamepad");
+        if (gamepad !== null) {
+          gamepad.innerHTML = values.join("");
+          init();
+        }
     });
 })();
