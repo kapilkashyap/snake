@@ -1,7 +1,8 @@
 .gamepad {
     display: flex;
     justify-content: space-between;
-    transform: scale(0.7);
+    margin: 10px 10px;
+    flex-direction: row-reverse;
 }
 
 .gamepad .directions {
@@ -10,20 +11,23 @@
 
 .gamepad .actions {
     display: flex;
+    align-items: center;
 }
 
 .game-controls {
     display: flex;
-    margin: auto;
 }
 
 .game-controls .direction-buttons {
     display: flex;
     flex-wrap: wrap;
     width: 136px;
+    height: 136px;
     transform: rotate(45deg);
     border: 3px solid #fff5;
     border-radius: 90px;
+    box-shadow: 0 0 10px 0 #fffb;
+    background: radial-gradient(circle 90px, #999, #333);
 }
 
 .game-controls .direction-buttons div.row {
@@ -82,47 +86,42 @@
     left: 4px;
     border-width: 0 5px 5px;
     border-style: solid;
-    border-color: transparent transparent #ffebeb;
+    border-color: transparent transparent #fff;
     transform: rotate(180deg);
 }
 
 .game-controls .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    width: 120px;
-    height: 120px;
-    margin: auto 5px;
+    width: 200px;
+    justify-content: space-around;
+    align-items: center;
 }
-
+/*
 .game-controls .action-buttons.rotate45deg {
     transform: rotate(45deg);
 }
-
-.game-controls .action-buttons div.row {
+*/
+.game-controls .action-buttons div.action-button {
     display: flex;
-}
-
-.game-controls .action-buttons div.row > div {
-    display: flex;
-    width: 36px;
-    height: 36px;
+    width: 60px;
+    height: 60px;
     background-color: red;
     border-radius: 90px;
-    border: 3px solid red;
-    margin: 9px;
+    border: 6px solid red;
+    box-shadow: 0 0 10px 0 #fffb;
 }
 
 .game-controls .action-buttons .button {
-    background-color: red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle 90px, #ff0000, #3336);
     border-radius: 45px;
-    transform: rotate(-45deg);
     width: 100%;
     text-align: center;
-    margin: auto;
-    color: #ffebeb;
     font-family: system-ui;
-    /* font-weight: 600; */
-    font-size: 18px;
+    font-weight: 600;
 }
 
 /*

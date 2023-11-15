@@ -25,10 +25,12 @@ html, body {
     height: 100%;
     margin-top: 10px;
     justify-content: space-between;
+    align-items: center;
 }
 .body-column {
     display: flex;
     flex-direction: column;
+    width: 444px;
 }
 .desktop-message {
     display: flex;
@@ -140,7 +142,7 @@ body.portable-device .game-stats div.life span {
     align-items: center;
 }
 .game-arena .instructions div.enabled:hover {
-    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.6);
+    box-shadow: 0 10px 6px -6px #3336;
 }
 .game-arena .instructions .selectMode .mode {
     display: flex;
@@ -159,6 +161,7 @@ body.portable-device .game-stats div.life span {
 .game-arena .instructions div.selected {
     background-color: red !important;
     cursor: default !important;
+    box-shadow: 0 10px 6px -6px #333!important;
 }
 .game-arena .instructions div.disabled {
     opacity: 0.6 !important;
@@ -206,7 +209,7 @@ body.portable-device .game-stats div.life span {
 .leaderboard {
     background-color: #ffffff;
     display: flex;
-    margin: 10px auto auto;
+    margin: 12px auto auto;
     border: 1px solid grey;
     width: 434px;
     flex-wrap: wrap;
@@ -328,20 +331,19 @@ body.portable-device .game-stats div.life span {
     display: flex;
     align-items: center;
     flex-direction: column;
-    /* justify-content: center; */
+    justify-content: center;
 }
 .game-action-buttons {
     display: flex;
-    /* justify-content: space-between; */
+    justify-content: center;
+    width: 130px;
 }
 .game-action-buttons div.buttons {
     display: flex;
-    /* font: 1em/1.2 Helvetica, arial, sans-serif; */
+    width: inherit;
+    justify-content: space-between;
 }
-.game-action-buttons div.buttons div.button {
-    margin-right: 5px;
-    margin-bottom: 1px;
-}
+/* .game-action-buttons div.buttons div.button {} */
 .game-action-buttons div.buttons div.play-pause {
     display: flex;
 }
@@ -421,36 +423,35 @@ body.portable-device .game-stats div.life span {
     margin-bottom: 10px;
     align-items: center;
     flex-direction: column;
+    width: inherit;
 }
 .copyright-details .info {
     display: flex;
-    width: 400px;
+    width: inherit;
     justify-content: space-between;
 }
 .copyright-details .info div {
     display: flex;
     margin: 2px 5px;
+    color: #fff5;
 }
 .copyright-details .info .link > a {
-    color: #fffb;
     text-decoration: none;
 }
 .copyright-details .info .link > a:hover {
+    color: #fffb;
     text-decoration: underline;
 }
 /* styles for copyright info - end */
 
 /* utility styles - start */
 .horizontal-separator {
-    display: block;
-    justify-content: center;
-    align-items: center;
+    width: inherit;
 }
 .horizontal-separator .line {
     height: 0;
     display: flex;
-    width: 400px;
-    border: 0 solid #fffb;
+    border: 0 solid #fff5;
     border-top-width: 1px;
 }
 .space-around {
