@@ -54,11 +54,11 @@ import config from "../assets/config.js";
 	let swipeAngle;
 	let swipeAngleMinThreshold;
 	let swipeAngleMaxThreshold;
-	let thresholdPassed=false;
-	let swipeThreshold=25; //required minimum distance traveled to be considered swipe
-	let defaultSwipeAngleMinThreshold=27; //minimum restraint for a right-angled movement
-	let defaultSwipeAngleMaxThreshold=63; //maximum restraint for a right-angled movement
-	let allowedTime=300; //maximum time allowed to travel that distance
+	let thresholdPassed = false;
+	let swipeThreshold = 25; // required minimum distance traveled to be considered swipe
+	let defaultSwipeAngleMinThreshold = 27; // minimum restraint for a right-angled movement
+	let defaultSwipeAngleMaxThreshold = 63; // maximum restraint for a right-angled movement
+	let allowedTime = 300; // maximum time allowed to travel that distance
 
 	// GAME CONFIG
 	let interval;
@@ -171,144 +171,266 @@ import config from "../assets/config.js";
 		registerKeys();
 	};
 
+	const gestureTouchStartListener = function (event) {
+		let touchObj=event.changedTouches[0];
+		startX=touchObj.pageX;
+		startY=touchObj.pageY;
+		// record time when finger first makes contact with surface
+		startTime=new Date().getTime();
+		isGesture=true;
+		thresholdPassed=false;
+		event.preventDefault();
+	};
+
+	const gestureTouchEndListener = function (event) {
+		if(isGesture) {
+			let touchObj=event.changedTouches[0];
+			endX=touchObj.pageX;
+			endY=touchObj.pageY;
+
+			// get horizontal dist traveled by finger while in contact with surface
+			deltaX=endX - startX;
+			// get vertical dist traveled by finger while in contact with surface
+			deltaY=endY - startY;
+			// get time elapsed
+			elapsedTime=new Date().getTime() - startTime;
+			// calculate the angle of swipe
+			swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
+			thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
+			if (elapsedTime <= allowedTime) {
+				//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
+				if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
+					if(swipeAngle<swipeAngleMinThreshold) {
+						swipeDirection=["east"];
+					}
+					else if(swipeAngle>swipeAngleMaxThreshold) {
+						swipeDirection=["north"];
+					}
+					else if(thresholdPassed) {
+						swipeDirection=["east", "north"];
+					}
+				}
+				else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
+					if(swipeAngle<swipeAngleMinThreshold) {
+						swipeDirection=["west"];
+					}
+					else if(swipeAngle>swipeAngleMaxThreshold) {
+						swipeDirection=["north"];
+					}
+					else if(thresholdPassed) {
+						swipeDirection=["west", "north"];
+					}
+				}
+				else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
+					if(swipeAngle<swipeAngleMinThreshold) {
+						swipeDirection=["west"];
+					}
+					else if(swipeAngle>swipeAngleMaxThreshold) {
+						swipeDirection=["south"];
+					}
+					else if(thresholdPassed) {
+						swipeDirection=["west", "south"];
+					}
+				}
+				else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
+					if(swipeAngle<swipeAngleMinThreshold) {
+						swipeDirection=["east"];
+					}
+					else if(swipeAngle>swipeAngleMaxThreshold) {
+						swipeDirection=["south"];
+					}
+					else if(thresholdPassed) {
+						swipeDirection=["east", "south"];
+					}
+				}
+				handleGesture(swipeDirection);
+			}
+			isGesture=false;
+		}
+		event.preventDefault();
+	};
+
+	const unregisterGestures = function () {
+		console.log('unregisterGestures');
+		const bodyCntr = document.querySelector(".body-container");
+		if (bodyCntr !== null) {
+			bodyCntr.removeEventListener("touchstart", gestureTouchStartListener, { passive: false });
+			bodyCntr.removeEventListener("touchend", gestureTouchEndListener, { passive: false });
+		}
+	};
+
+	const registerGestures = function () {
+		console.log('registerGestures');
+		const bodyCntr = document.querySelector(".body-container");
+		if (bodyCntr !== null) {
+			bodyCntr.addEventListener("touchstart", gestureTouchStartListener, { passive: false });
+			bodyCntr.addEventListener("touchend", gestureTouchEndListener, { passive: false });
+		}
+	};
+
+	const updateGamepadSetup = function () {
+		console.log('updateGamepadSetup');
+		const gamepadEl = document.querySelector('.gamepad');
+		if (gamepadEl !== null) {
+			const settings = JSON.parse(retrieveItem('snake-game-settings'));
+			gamepadEl.classList.remove('show', 'hide');
+			if (settings !== null && settings.useGamepad) {
+				gamepadEl.classList.add('show');
+				unregisterGestures();
+			} else {
+				gamepadEl.classList.add('hide');
+				registerGestures();
+			}
+		}
+	};
+
 	const registerKeys = function () {
 		document.querySelectorAll('.life .value span').forEach(function (node) {
 			node.innerHTML = '&#9829;';
 		});
 
-		if (!isPortableMode || isPortableMode && config.useGamepad) {
-			document.addEventListener('keydown', function (event) {
-				event.stopPropagation();
-				event.preventDefault();
-				if (event.code === 'ArrowUp' || event.code === 'KeyW') {
-					if (event.shiftKey && (direction === 'east' || direction === 'west')) {
-						handleDoubleDirectionChange(['north', direction]);
-					} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
-						handleDoubleDirectionChange(['north', direction === 'east' ? 'west' : 'east']);
-					} else {
-						handleDirectionChange('north');
-					}
-				} else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
-					if (event.shiftKey && (direction === 'north' || direction === 'south')) {
-						handleDoubleDirectionChange(['east', direction]);
-					} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
-						handleDoubleDirectionChange(['east', direction === 'north' ? 'south' : 'north']);
-					} else {
-						handleDirectionChange('east');
-					}
-				} else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
-					if (event.shiftKey && (direction === 'east' || direction === 'west')) {
-						handleDoubleDirectionChange(['south', direction]);
-					} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
-						handleDoubleDirectionChange(['south', direction === 'east' ? 'west' : 'east']);
-					} else {
-						handleDirectionChange('south');
-					}
-				} else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
-					if (event.shiftKey && (direction === 'north' || direction === 'south')) {
-						handleDoubleDirectionChange(['west', direction]);
-					} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
-						handleDoubleDirectionChange(['west', direction === 'north' ? 'south' : 'north']);
-					} else {
-						handleDirectionChange('west');
-					}
-				} else if (event.code === 'Space' && (gameState === 'stopped' || gameState === undefined)) {
-					playEventHandler();
-				} else if (event.code === 'Space' && gameState !== 'over') {
-					pauseEventHandler();
-				} else if (event.code === 'KeyR' && interval === undefined) {
-					//reset
-					resetEventHandler();
+		// if (!isPortableMode || isPortableMode && config.useGamepad) {
+		// Always register keydown event
+		document.addEventListener('keydown', function (event) {
+			event.stopPropagation();
+			event.preventDefault();
+			if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+				if (event.shiftKey && (direction === 'east' || direction === 'west')) {
+					handleDoubleDirectionChange(['north', direction]);
+				} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
+					handleDoubleDirectionChange(['north', direction === 'east' ? 'west' : 'east']);
+				} else {
+					handleDirectionChange('north');
 				}
-			});
-		}
+			} else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
+				if (event.shiftKey && (direction === 'north' || direction === 'south')) {
+					handleDoubleDirectionChange(['east', direction]);
+				} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
+					handleDoubleDirectionChange(['east', direction === 'north' ? 'south' : 'north']);
+				} else {
+					handleDirectionChange('east');
+				}
+			} else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
+				if (event.shiftKey && (direction === 'east' || direction === 'west')) {
+					handleDoubleDirectionChange(['south', direction]);
+				} else if (event.ctrlKey && (direction === 'east' || direction === 'west')) {
+					handleDoubleDirectionChange(['south', direction === 'east' ? 'west' : 'east']);
+				} else {
+					handleDirectionChange('south');
+				}
+			} else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
+				if (event.shiftKey && (direction === 'north' || direction === 'south')) {
+					handleDoubleDirectionChange(['west', direction]);
+				} else if (event.ctrlKey && (direction === 'north' || direction === 'south')) {
+					handleDoubleDirectionChange(['west', direction === 'north' ? 'south' : 'north']);
+				} else {
+					handleDirectionChange('west');
+				}
+			} else if (event.code === 'Space' && (gameState === 'stopped' || gameState === undefined)) {
+				playEventHandler();
+			} else if (event.code === 'Space' && gameState !== 'over') {
+				pauseEventHandler();
+			} else if (event.code === 'KeyR' && interval === undefined) {
+				//reset
+				resetEventHandler();
+			}
+		});
+		// }
 
 		if (isPortableMode) {
 			document.querySelector('.game-actions').classList.remove('hide');
-			if (config.useGamepad) {
-				document.querySelector('.gamepad').classList.remove('hide');
-			} else {
-				updateActionButtonLabel();
-				// Gestures
-				document.querySelector(".body-container").addEventListener("touchstart", function(event) {
-					let touchObj=event.changedTouches[0];
-					startX=touchObj.pageX;
-					startY=touchObj.pageY;
-					// record time when finger first makes contact with surface
-					startTime=new Date().getTime();
-					isGesture=true;
-					thresholdPassed=false;
-					event.preventDefault();
-				}, { passive: false });
-
-				document.querySelector(".body-container").addEventListener("touchend", function(event) {
-					if(isGesture) {
-						let touchObj=event.changedTouches[0];
-						endX=touchObj.pageX;
-						endY=touchObj.pageY;
-
-						// get horizontal dist traveled by finger while in contact with surface
-						deltaX=endX - startX;
-						// get vertical dist traveled by finger while in contact with surface
-						deltaY=endY - startY;
-						// get time elapsed
-						elapsedTime=new Date().getTime() - startTime;
-						// calculate the angle of swipe
-						swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
-						thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
-						if (elapsedTime <= allowedTime) {
-							//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
-							if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
-								if(swipeAngle<swipeAngleMinThreshold) {
-									swipeDirection=["east"];
-								}
-								else if(swipeAngle>swipeAngleMaxThreshold) {
-									swipeDirection=["north"];
-								}
-								else if(thresholdPassed) {
-									swipeDirection=["east", "north"];
-								}
-							}
-							else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
-								if(swipeAngle<swipeAngleMinThreshold) {
-									swipeDirection=["west"];
-								}
-								else if(swipeAngle>swipeAngleMaxThreshold) {
-									swipeDirection=["north"];
-								}
-								else if(thresholdPassed) {
-									swipeDirection=["west", "north"];
-								}
-							}
-							else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
-								if(swipeAngle<swipeAngleMinThreshold) {
-									swipeDirection=["west"];
-								}
-								else if(swipeAngle>swipeAngleMaxThreshold) {
-									swipeDirection=["south"];
-								}
-								else if(thresholdPassed) {
-									swipeDirection=["west", "south"];
-								}
-							}
-							else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
-								if(swipeAngle<swipeAngleMinThreshold) {
-									swipeDirection=["east"];
-								}
-								else if(swipeAngle>swipeAngleMaxThreshold) {
-									swipeDirection=["south"];
-								}
-								else if(thresholdPassed) {
-									swipeDirection=["east", "south"];
-								}
-							}
-							handleGesture(swipeDirection);
-						}
-						isGesture=false;
-					}
-					event.preventDefault();
-				}, { passive: false });
-			}
+			updateGamepadSetup();
+			// if (settings.useGamepad) {
+			// 	document.querySelector('.gamepad').classList.remove('hide');
+			// 	unregisterGestures();
+			// } else {
+			// 	document.querySelector('.gamepad').classList.remove('show');
+			// 	registerGestures();
+			// }
+			// else {
+			// // Gestures
+			// document.querySelector(".body-container").addEventListener("touchstart", function(event) {
+			// 	const config = JSON.parse(retrieveItem('snake-game-settings'));
+			// 	if (config.useGamepad) {
+			// 		let touchObj=event.changedTouches[0];
+			// 		startX=touchObj.pageX;
+			// 		startY=touchObj.pageY;
+			// 		// record time when finger first makes contact with surface
+			// 		startTime=new Date().getTime();
+			// 		isGesture=true;
+			// 		thresholdPassed=false;
+			// 	}
+			// 	event.preventDefault();
+			// }, { passive: false });
+			//
+			// document.querySelector(".body-container").addEventListener("touchend", function(event) {
+			// 	if(isGesture) {
+			// 		let touchObj=event.changedTouches[0];
+			// 		endX=touchObj.pageX;
+			// 		endY=touchObj.pageY;
+			//
+			// 		// get horizontal dist traveled by finger while in contact with surface
+			// 		deltaX=endX - startX;
+			// 		// get vertical dist traveled by finger while in contact with surface
+			// 		deltaY=endY - startY;
+			// 		// get time elapsed
+			// 		elapsedTime=new Date().getTime() - startTime;
+			// 		// calculate the angle of swipe
+			// 		swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
+			// 		thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
+			// 		if (elapsedTime <= allowedTime) {
+			// 			//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
+			// 			if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
+			// 				if(swipeAngle<swipeAngleMinThreshold) {
+			// 					swipeDirection=["east"];
+			// 				}
+			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
+			// 					swipeDirection=["north"];
+			// 				}
+			// 				else if(thresholdPassed) {
+			// 					swipeDirection=["east", "north"];
+			// 				}
+			// 			}
+			// 			else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
+			// 				if(swipeAngle<swipeAngleMinThreshold) {
+			// 					swipeDirection=["west"];
+			// 				}
+			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
+			// 					swipeDirection=["north"];
+			// 				}
+			// 				else if(thresholdPassed) {
+			// 					swipeDirection=["west", "north"];
+			// 				}
+			// 			}
+			// 			else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
+			// 				if(swipeAngle<swipeAngleMinThreshold) {
+			// 					swipeDirection=["west"];
+			// 				}
+			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
+			// 					swipeDirection=["south"];
+			// 				}
+			// 				else if(thresholdPassed) {
+			// 					swipeDirection=["west", "south"];
+			// 				}
+			// 			}
+			// 			else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
+			// 				if(swipeAngle<swipeAngleMinThreshold) {
+			// 					swipeDirection=["east"];
+			// 				}
+			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
+			// 					swipeDirection=["south"];
+			// 				}
+			// 				else if(thresholdPassed) {
+			// 					swipeDirection=["east", "south"];
+			// 				}
+			// 			}
+			// 			handleGesture(swipeDirection);
+			// 		}
+			// 		isGesture=false;
+			// 	}
+			// 	event.preventDefault();
+			// }, { passive: false });
+			// }
 
 			document.querySelector('.game-actions .play-pause').addEventListener(
 				'touchstart',
@@ -1343,6 +1465,39 @@ import config from "../assets/config.js";
 		});
 	};
 
+	const initializeSettingOptionsHandler = function () {
+		document.querySelectorAll('.settings .options input').forEach(function (node) {
+			console.log(node);
+			node.addEventListener('click', function (event) {
+				const config = JSON.parse(retrieveItem('snake-game-settings'));
+				persistItem('snake-game-settings', JSON.stringify({ ...config, [event.target.id]: event.target.checked }));
+				// Update option specific setup
+				if (event.target.id === 'useGamepad') {
+					updateGamepadSetup();
+				}
+			});
+		});
+	};
+
+	const initializeGameSettings = function () {
+		const settings = JSON.parse(retrieveItem('snake-game-settings'));
+		if (settings !== null) {
+			Object.keys(settings).forEach(function (entry) {
+				if (settings[entry]) {
+					document.querySelector(`#${entry}`).checked = true;
+				}
+			});
+		}
+		initializeSettingOptionsHandler();
+	};
+
+	const displayGameSettings = function () {
+		if (isPortableMode) {
+			document.querySelector('.settings').classList.remove('hide');
+			initializeGameSettings();
+		}
+	};
+
 	// STATS AND TIMINGS DISPLAY
 	const updateLeaderboard = function () {
 		let leaderboard = document.querySelector('.leaderboard');
@@ -1721,6 +1876,7 @@ import config from "../assets/config.js";
 		addModeLevels();
 		updateModeLevels();
 		displayModeInstructions();
+		displayGameSettings();
 		updateLeaderboard();
 		updateSwipeAngleThresholds();
 		setGameProgressFactor();
