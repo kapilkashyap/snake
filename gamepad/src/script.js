@@ -5,25 +5,32 @@ import gameConfig from '../../assets/config.js';
  * This is a WIP and will be configuration driven in later versions
  */
 const init = () => {
-    let isCtrlKey = false;
-    let isShiftKey = false;
+    const comboKeyObject = {
+        ctrlKey: false,
+        shiftKey: false
+    };
+
+    const resetComboKeyObject = () => {
+        setTimeout(() => {
+            comboKeyObject.shiftKey = false;
+            comboKeyObject.ctrlKey = false;
+        }, 0);
+    };
 
     const addTouchEventListener = (selector, eventName, dispatchEventName, dispatchEventObj) => {
         document.querySelector(selector).addEventListener(eventName, () => {
             // navigator.vibrate(75);
             document.dispatchEvent(new KeyboardEvent(dispatchEventName, {
-                ...dispatchEventObj, ctrlKey: isCtrlKey, shiftKey: isShiftKey
+                ...dispatchEventObj,
+                ...comboKeyObject
             }));
-            setTimeout(() => {
-                isCtrlKey = false;
-                isShiftKey = false;
-            }, 0);
+            resetComboKeyObject();
         }, true);
     };
 
     // up-arrow
     addTouchEventListener(
-        '.direction-buttons .row .top .shape',
+        '.direction-buttons .row .top.button',
         'click',
         'keydown',
         { 'code': 'ArrowUp' }
@@ -31,7 +38,7 @@ const init = () => {
 
     // right-arrow
     addTouchEventListener(
-        '.direction-buttons .row .right .shape',
+        '.direction-buttons .row .right.button',
         'click',
         'keydown',
         { 'code': 'ArrowRight' }
@@ -39,7 +46,7 @@ const init = () => {
 
     // down-arrow
     addTouchEventListener(
-        '.direction-buttons .row .down .shape',
+        '.direction-buttons .row .down.button',
         'click',
         'keydown',
         { 'code': 'ArrowDown' }
@@ -47,21 +54,21 @@ const init = () => {
 
     // left-arrow
     addTouchEventListener(
-        '.direction-buttons .row .left .shape',
+        '.direction-buttons .row .left.button',
         'click',
         'keydown',
         { 'code': 'ArrowLeft' }
     );
 
-    document.querySelector('.action-buttons .action-button.x .button').addEventListener('click', () => {
-        isShiftKey = false;
-        isCtrlKey = true;
+    document.querySelector('.action-buttons .action-button.x').addEventListener('click', () => {
+        comboKeyObject.shiftKey = false;
+        comboKeyObject.ctrlKey = true;
         // navigator.vibrate(75);
     }, true);
 
-    document.querySelector('.action-buttons .action-button.y .button').addEventListener('click', () => {
-        isCtrlKey = false;
-        isShiftKey = true;
+    document.querySelector('.action-buttons .action-button.y').addEventListener('click', () => {
+        comboKeyObject.shiftKey = true;
+        comboKeyObject.ctrlKey = false;
         // navigator.vibrate(75);
     }, true);
 };
