@@ -167,6 +167,25 @@ body.portable-device .game-stats div.life span {
     opacity: 0.6 !important;
     cursor: default !important;
 }
+.game-arena .instructions .settings {
+    margin: 18px 12px 24px 12px;
+}
+.game-arena .instructions .settings .options {
+    display: flex;
+}
+.game-arena .instructions .settings .options .inputWithLabel {
+    display: flex;
+    align-items: center;
+    margin: 5px 10px 0 10px;
+    gap: 5px;
+}
+.game-arena .instructions .settings .inputWithLabel input {
+    display: flex;
+    accent-color: red;
+}
+.game-arena .instructions .settings .inputWithLabel label {
+    display: flex;
+}
 .game-arena .game-arena-display div {
     margin: 1px;
     width: 10px;
