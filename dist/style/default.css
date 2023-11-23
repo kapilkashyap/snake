@@ -260,6 +260,16 @@ body.portable-device .game-stats div.life span {
 }
 /* styles for leader board - end */
 
+/* styles for game controls - start */
+.game-controls-container {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0 15px 0;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+/* styles for game controls - end */
+
 /* styles for entities - start */
 .food {
     background-color: #66BB6A !important;
