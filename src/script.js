@@ -171,6 +171,16 @@ import config from "../assets/config.js";
 		registerKeys();
 	};
 
+	/* Accepts a HTML DOM element */
+	const avoidTouchEventsFor = function (node) {
+		node.addEventListener('touchstart', function(event) {
+			event.stopPropagation();
+		});
+		node.addEventListener('touchend', function(event) {
+			event.stopPropagation();
+		});
+	};
+
 	const gestureTouchStartListener = function (event) {
 		let touchObj=event.changedTouches[0];
 		startX=touchObj.pageX;
@@ -251,7 +261,6 @@ import config from "../assets/config.js";
 	};
 
 	const unregisterGestures = function () {
-		console.log('unregisterGestures');
 		const bodyCntr = document.querySelector(".body-container");
 		if (bodyCntr !== null) {
 			bodyCntr.removeEventListener("touchstart", gestureTouchStartListener, { passive: false });
@@ -260,7 +269,6 @@ import config from "../assets/config.js";
 	};
 
 	const registerGestures = function () {
-		console.log('registerGestures');
 		const bodyCntr = document.querySelector(".body-container");
 		if (bodyCntr !== null) {
 			bodyCntr.addEventListener("touchstart", gestureTouchStartListener, { passive: false });
@@ -269,7 +277,6 @@ import config from "../assets/config.js";
 	};
 
 	const updateGamepadSetup = function () {
-		console.log('updateGamepadSetup');
 		const gamepadEl = document.querySelector('.gamepad');
 		if (gamepadEl !== null) {
 			const settings = JSON.parse(retrieveItem('snake-game-settings'));
@@ -339,98 +346,8 @@ import config from "../assets/config.js";
 
 		if (isPortableMode) {
 			document.querySelector('.game-actions').classList.remove('hide');
+			avoidTouchEventsFor(document.querySelector('.info .link'));
 			updateGamepadSetup();
-			// if (settings.useGamepad) {
-			// 	document.querySelector('.gamepad').classList.remove('hide');
-			// 	unregisterGestures();
-			// } else {
-			// 	document.querySelector('.gamepad').classList.remove('show');
-			// 	registerGestures();
-			// }
-			// else {
-			// // Gestures
-			// document.querySelector(".body-container").addEventListener("touchstart", function(event) {
-			// 	const config = JSON.parse(retrieveItem('snake-game-settings'));
-			// 	if (config.useGamepad) {
-			// 		let touchObj=event.changedTouches[0];
-			// 		startX=touchObj.pageX;
-			// 		startY=touchObj.pageY;
-			// 		// record time when finger first makes contact with surface
-			// 		startTime=new Date().getTime();
-			// 		isGesture=true;
-			// 		thresholdPassed=false;
-			// 	}
-			// 	event.preventDefault();
-			// }, { passive: false });
-			//
-			// document.querySelector(".body-container").addEventListener("touchend", function(event) {
-			// 	if(isGesture) {
-			// 		let touchObj=event.changedTouches[0];
-			// 		endX=touchObj.pageX;
-			// 		endY=touchObj.pageY;
-			//
-			// 		// get horizontal dist traveled by finger while in contact with surface
-			// 		deltaX=endX - startX;
-			// 		// get vertical dist traveled by finger while in contact with surface
-			// 		deltaY=endY - startY;
-			// 		// get time elapsed
-			// 		elapsedTime=new Date().getTime() - startTime;
-			// 		// calculate the angle of swipe
-			// 		swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
-			// 		thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
-			// 		if (elapsedTime <= allowedTime) {
-			// 			//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
-			// 			if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
-			// 				if(swipeAngle<swipeAngleMinThreshold) {
-			// 					swipeDirection=["east"];
-			// 				}
-			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
-			// 					swipeDirection=["north"];
-			// 				}
-			// 				else if(thresholdPassed) {
-			// 					swipeDirection=["east", "north"];
-			// 				}
-			// 			}
-			// 			else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
-			// 				if(swipeAngle<swipeAngleMinThreshold) {
-			// 					swipeDirection=["west"];
-			// 				}
-			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
-			// 					swipeDirection=["north"];
-			// 				}
-			// 				else if(thresholdPassed) {
-			// 					swipeDirection=["west", "north"];
-			// 				}
-			// 			}
-			// 			else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
-			// 				if(swipeAngle<swipeAngleMinThreshold) {
-			// 					swipeDirection=["west"];
-			// 				}
-			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
-			// 					swipeDirection=["south"];
-			// 				}
-			// 				else if(thresholdPassed) {
-			// 					swipeDirection=["west", "south"];
-			// 				}
-			// 			}
-			// 			else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
-			// 				if(swipeAngle<swipeAngleMinThreshold) {
-			// 					swipeDirection=["east"];
-			// 				}
-			// 				else if(swipeAngle>swipeAngleMaxThreshold) {
-			// 					swipeDirection=["south"];
-			// 				}
-			// 				else if(thresholdPassed) {
-			// 					swipeDirection=["east", "south"];
-			// 				}
-			// 			}
-			// 			handleGesture(swipeDirection);
-			// 		}
-			// 		isGesture=false;
-			// 	}
-			// 	event.preventDefault();
-			// }, { passive: false });
-			// }
 
 			document.querySelector('.game-actions .play-pause').addEventListener(
 				'touchstart',
@@ -454,6 +371,7 @@ import config from "../assets/config.js";
 					event.stopPropagation();
 					event.preventDefault();
 
+					disablePlayPauseButton(false);
 					if (this.querySelector('button').disabled) {
 						return;
 					}
@@ -767,8 +685,13 @@ import config from "../assets/config.js";
 	    swipeAngleMaxThreshold = isMazeMode() ? 45 : defaultSwipeAngleMaxThreshold;
 	};
 
+	const disablePlayPauseButton = function (isDisabled) {
+		isDisabled = isDisabled === undefined ? true : isDisabled;
+		document.querySelector('.button.play-pause button').disabled = isDisabled;
+	};
+
 	const disableResetButton = function (isDisabled) {
-		isDisabled = isDisabled === undefined;
+		isDisabled = isDisabled === undefined ? true : isDisabled;
 		document.querySelector('.button.reset button').disabled = isDisabled;
 	};
 
@@ -1467,7 +1390,7 @@ import config from "../assets/config.js";
 
 	const initializeSettingOptionsHandler = function () {
 		document.querySelectorAll('.settings .options input').forEach(function (node) {
-			console.log(node);
+			avoidTouchEventsFor(node);
 			node.addEventListener('click', function (event) {
 				const config = JSON.parse(retrieveItem('snake-game-settings'));
 				persistItem('snake-game-settings', JSON.stringify({ ...config, [event.target.id]: event.target.checked }));
@@ -1582,7 +1505,8 @@ import config from "../assets/config.js";
 			updateLife();
 			updateMessage(msg || messages.GAME_OVER + messages.SPACE + messages.RESET);
 			if (isPortableMode) {
-				toggleHide("play-pause", true);
+				updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
+				disablePlayPauseButton(true);
 			}
 			// specific check for maze mode as we want to update the game stats only when maze is completed successfully
 			if (!isMazeMode()) {
