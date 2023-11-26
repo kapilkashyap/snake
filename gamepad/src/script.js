@@ -5,6 +5,7 @@ import gameConfig from '../../assets/config.js';
  * This is a WIP and will be configuration driven in later versions
  */
 const init = () => {
+    const vibrateDuration = 30;
     const comboKeyObject = {
         ctrlKey: false,
         shiftKey: false
@@ -19,7 +20,7 @@ const init = () => {
 
     const addTouchEventListener = (selector, eventName, dispatchEventName, dispatchEventObj) => {
         document.querySelector(selector).addEventListener(eventName, () => {
-            // navigator.vibrate(75);
+            navigator.vibrate(vibrateDuration);
             document.dispatchEvent(new KeyboardEvent(dispatchEventName, {
                 ...dispatchEventObj,
                 ...comboKeyObject
@@ -63,13 +64,13 @@ const init = () => {
     document.querySelector('.action-buttons .action-button.x').addEventListener('click', () => {
         comboKeyObject.shiftKey = false;
         comboKeyObject.ctrlKey = true;
-        // navigator.vibrate(75);
+        navigator.vibrate(vibrateDuration);
     }, true);
 
     document.querySelector('.action-buttons .action-button.y').addEventListener('click', () => {
         comboKeyObject.shiftKey = true;
         comboKeyObject.ctrlKey = false;
-        // navigator.vibrate(75);
+        navigator.vibrate(vibrateDuration);
     }, true);
 };
 
