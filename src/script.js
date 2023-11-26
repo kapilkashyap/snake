@@ -1389,6 +1389,16 @@ import config from "../assets/config.js";
 				}
 			}
 		});
+
+		document.querySelectorAll('.handheld').forEach((node) => {
+			node.classList.add(isPortableMode ? 'show' : 'hide');
+			node.classList.remove(isPortableMode ? 'hide' : 'show');
+		});
+
+		document.querySelectorAll('.not-handheld').forEach((node) => {
+			node.classList.add(isPortableMode ? 'hide' : 'show');
+			node.classList.remove(isPortableMode ? 'show' : 'hide');
+		});
 	};
 
 	const initializeSettingOptionsHandler = function () {
