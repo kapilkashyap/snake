@@ -859,8 +859,10 @@ import config from "../assets/config.js";
 		}
 	};
 
-	const removeEntity = function (entry, entityType) {
-		// let node=nodeSelection(entry);
+	const removeEntity = function (entry, entityType, vibrateDuration) {
+		if (vibrateDuration !== null) {
+			navigator.vibrate(vibrateDuration);
+		}
 		removeEntityFromNode(nodeSelection(entry), entityType);
 	};
 
@@ -968,7 +970,7 @@ import config from "../assets/config.js";
 	};
 
 	// LOGIC FOR FLICKER EFFECT
-	const induceFlickerEffect = function (flickerCount) {
+	const induceFlickerEffect = function (flickerCount, vibrateDuration) {
 		flickerCount = flickerCount || 6;
 		let paths = document.querySelectorAll('.path');
 		flickerInterval = setInterval(function () {
@@ -981,6 +983,7 @@ import config from "../assets/config.js";
 			});
 			flickerCount--;
 		}, 200);
+		navigator.vibrate(vibrateDuration || 250);
 	};
 
 	// LOGIC TO INDUCE A PAUSE BEFORE CONTINUING
@@ -1471,11 +1474,11 @@ import config from "../assets/config.js";
 
 	// LOGIC FOR GAME OVER
 	const gameOver = function (count, msg, bypassSnakeLife, cleanup) {
+		let vibrateDuration = 250;
 		bypassSnakeLife = bypassSnakeLife === undefined ? false : bypassSnakeLife;
 		interval = clearAndResetInterval(interval);
 		timerInterval = clearAndResetInterval(timerInterval);
 		scoreInterval = clearAndResetInterval(scoreInterval);
-		induceFlickerEffect(count);
 
 		if (cleanup) {
 			removeTrail();
@@ -1501,6 +1504,7 @@ import config from "../assets/config.js";
 			);
 			updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
 		} else {
+			vibrateDuration = [250, 100, 250, 100, 250, 100, 250, 100, 250];
 			setGameState('over');
 			updateLife();
 			updateMessage(msg || messages.GAME_OVER + messages.SPACE + messages.RESET);
@@ -1516,6 +1520,7 @@ import config from "../assets/config.js";
 		if (isPortableMode) {
 			disableResetButton(false);
 		}
+		induceFlickerEffect(count, vibrateDuration);
 	};
 
 	// SNAKE MOVE LOGIC
@@ -1726,7 +1731,7 @@ import config from "../assets/config.js";
 		mealIndex = meals.indexOf(currentLocation.toString());
 		if (mealIndex !== -1) {
 			meals.splice(mealIndex, 1);
-			removeEntity(currentLocation, 'food');
+			removeEntity(currentLocation, 'food', 30);
 			updateScore();
 			generateFood();
 			snakeLength += isChallengeMode() ? 5 : 1;
