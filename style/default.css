@@ -61,12 +61,14 @@ html, body {
 .game-stats div {
     margin: 0 5px 0 5px;
     display: flex;
+    align-items: center;
 }
 .game-stats div.value {
     margin: 0 2px;
 }
 .game-stats div.level div.value {
     width: 18px;
+    height: 18px;
     justify-content: center;
     border-radius: 10px;
     margin: 0;

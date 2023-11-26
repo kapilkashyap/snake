@@ -1711,15 +1711,15 @@ import config from "../assets/config.js";
 
 	const triggerLevelUp = function () {
 		const levelUpValueNode = document.querySelector('.level .value');
-		let lvlUpPixel = 1.9;
+		let lvlUpPixel = 2;
 		const levelUpInterval = setInterval(function () {
-			lvlUpPixel += 0.1;
-			levelUpValueNode.style.background = 'repeating-radial-gradient(orange, transparent ' + lvlUpPixel + 'px)';
-			if (lvlUpPixel > 15) {
+			lvlUpPixel += 0.5;
+			levelUpValueNode.style.background = 'repeating-radial-gradient(#faad00, transparent ' + lvlUpPixel + 'px)';
+			if (lvlUpPixel > 10) {
 				levelUpValueNode.style.background = '';
 				clearAndResetInterval(levelUpInterval);
 			}
-		}, 20);
+		}, 100);
 	};
 
 	// LOGIC TO UPDATE THE STATE OF GAME
