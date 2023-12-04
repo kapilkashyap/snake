@@ -61,7 +61,7 @@ body.dark .game-arena .game-arena-display.maze-mode div {
     height: 11px;
     background: transparent;
 }
-body.dark .game-arena .game-arena-display div.path {
+body.dark .game-arena .game-arena-display div.path:not(.head) {
     background-color: #fff !important;
     border-color: transparent;
 }
