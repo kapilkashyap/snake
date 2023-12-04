@@ -1,133 +1,45 @@
-import predefinedMazeCoordinates from '../assets/data/predefined-maze-coordinates.js';
 import config from "../assets/config.js";
+
+import { DefaultDirection, Modes, SpeedSettings } from './constants.js';
+import { DefaultSettings, Locals, Thresholds, GameConfig, TouchEventVariables } from './variables.js';
+import { initMessages } from "./messages.js";
+import { checkPortableMode, disableDefaultBehavior } from "./util.js";
+
+// TODO
+// import * as Variables from './variables.js';
+// const { GameConfig: gc } = Variables;
 
 /**
  * @author: Kapil Kashyap
  */
-(function () {
-	// DEFAULT SETTINGS
-	const defaultDirection = 'north';
-	let row;
-	let column;
-	let snakeLength = 3;
-	let snakeLife = 3;
-	let direction = defaultDirection;
-	let prevDirection;
-	let prevSnakeLength = 0;
-	let rowsCount;
-	let columnsCount;
-	let totalRectsCount;
-	let totalRectsCountChallengeMode;
+(() => {
+	const isPortableMode = checkPortableMode();
+	const messages = initMessages(isPortableMode);
 
-	// SPEED SETTINGS
-	const baseTime = 440;
-	const speedCutOff = 40;
-	const classicModeBaseTime = 340; //240
-	const classicModeSpeedCutOff = 100; //60
-	const mazeModeSpeedCutOff = 152;
-	const reduction = 40;
-	let speed;
+	const { availableModes, unlockedModes } = Modes;
+	const {
+		baseTime, speedCutOff, classicModeBaseTime,
+		classicModeSpeedCutOff, mazeModeSpeedCutOff, reduction
+	} = SpeedSettings;
+	const {
+		allowedTime, coordinates, defaultSwipeAngleMaxThreshold,
+		defaultSwipeAngleMinThreshold, swipeThreshold
+	} = DefaultSettings;
 
-	// THRESHOLDS
-	let baseThresholds = [];
-	let northThreshold;
-	let westThreshold;
-	let eastThreshold;
-	let southThreshold;
-
-	// MODES
-	const availableModes = ['classic', 'challenge', 'maze'];
-	const unlockedModes = ['classic', 'challenge', 'maze'];
-	let selectedMode = availableModes[0];
-
-	// TOUCH EVENT VARIABLES
-	let isGesture = false;
-	let startX;
-	let startY;
-	let endX;
-	let endY;
-	let deltaX;
-	let deltaY;
-	let startTime;
-	let elapsedTime;
-	let swipeDirection;
-	let swipeAngle;
-	let swipeAngleMinThreshold;
-	let swipeAngleMaxThreshold;
-	let thresholdPassed = false;
-	let swipeThreshold = 25; // required minimum distance traveled to be considered swipe
-	let defaultSwipeAngleMinThreshold = 27; // minimum restraint for a right-angled movement
-	let defaultSwipeAngleMaxThreshold = 63; // maximum restraint for a right-angled movement
-	let allowedTime = 300; // maximum time allowed to travel that distance
-
-	// GAME CONFIG
-	let interval;
-	let timerInterval;
-	let scoreInterval;
-	let flickerInterval;
-	let coordinates = predefinedMazeCoordinates['12x12'];
-	let selectedCoordinates;
-	let nodes = [];
-	let removeNodes = [];
-	let meals = [];
-	let dangers = [];
-	let movesQueue = [];
-	let gameState;
-	let levelUpPeriod;
-	let maxLevel;
-	let mazePathTraversed = 0;
-	let gameProgressFactor;
-	let gameProgressBar = document.querySelector('.game-indicator .progress-bar');
-	let level = 1;
-	let levelNode = document.querySelector('.level>.value');
-	let incrementLevel = false;
-	let score = 0;
-	let scoreNode = document.querySelector('.score>.value');
-	// let time=0.0;
-	// let timerNode=document.querySelector(".time>.value");
-
-	const isPortableMode = (function () {
-		if (/Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent)) {
-			if (/iPad/i.test(navigator.userAgent)) {
-				document.body.style.zoom = '175%';
-			} else {
-				document.body.style.zoom = '200%';
-			}
-			document.body.classList.add('portable-device');
-			return true;
-		}
-		return false;
-	})();
-
-	// MESSAGES
-	const messages = {
-		START: isPortableMode ? 'Press play button to start.' : 'Press space bar to start.',
-		RESET: isPortableMode ? 'Press reset button.' : "Press 'R' to reset.",
-		PAUSE: isPortableMode ? '' : 'Press space bar to pause.',
-		RESUME: isPortableMode ? 'Press play button to resume.' : 'Press space bar to resume.',
-		LIVES_REMAINING: 'lives remaining!',
-		LIFE_REMAINING: 'life remaining!',
-		GAME_OVER: 'Game over!',
-		CONGRATULATIONS: 'Congratulations',
-		LEVEL_UNLOCKED: 'level unlocked!',
-		AMAZING: 'Amazing',
-		ALL_LEVELS_COMPLETED: 'all levels completed!',
-		TOP_N_SCORES: `Your top ${config.topScoreLimit} scores will appear here...`,
-		PLAY_BUTTON_LABEL: 'Play',
-		PAUSE_BUTTON_LABEL: 'Pause',
-		DISCLAIMER: 'Works best on desktop.',
-		EXCLAMATION: '!',
-		COMMA: ', ',
-		SPACE: ' ',
-		WELL_DONE: 'Congratulations & well done! :)',
-	};
+	let { direction, selectedMode, snakeLength, snakeLife } = DefaultSettings;
+	let {
+		column, columnsCount, row, prevDirection, prevSnakeLength,
+		rowsCount, totalRectsCount, totalRectsCountChallengeMode, speed
+	} = Locals;
+	let { baseThresholds, eastThreshold, northThreshold, southThreshold, westThreshold } = Thresholds;
 
 	const setupArena = function () {
-		let arena = document.querySelector('.game-arena-display');
-		let dimensions = arena.getBoundingClientRect();
-		let sampleTile = arena.querySelector('div');
-		let tileDimension = getDimension(sampleTile);
-		let div = document.createElement('DIV');
+		const arena = document.querySelector('.game-arena-display');
+		const dimensions = arena.getBoundingClientRect();
+		const sampleTile = arena.querySelector('div');
+		const tileDimension = getDimension(sampleTile);
+		const div = document.createElement('DIV');
+
 		let clone = null;
 		let r = 1;
 		let c = 1;
@@ -153,31 +65,10 @@ import config from "../assets/config.js";
 		// set global variables
 		updateGameArenaThresholds(baseThresholds);
 		setSpeed();
-		levelUpPeriod = calculateLevelUpPeriod();
+		GameConfig.levelUpPeriod = calculateLevelUpPeriod();
 		updateMessage(messages.START);
 		registerKeys();
 		disableDefaultBehavior();
-	};
-
-	const disableDefaultBehavior = function () {
-		// Avoid Ctrl + wheel scroll to zoom-in or zoom-out
-		document.body.addEventListener('wheel', function (event) {
-			event.preventDefault();
-		}, { passive: false });
-
-		// Avoiding double-tap zooming on mobile devices
-		// Inspired by https://gist.github.com/ethanny2/44d5ad69970596e96e0b48139b89154b
-		document.body.addEventListener('touchend', (function() {
-			let lastTap = 0;
-			return function(event) {
-				const curTime = new Date().getTime();
-				const tapLen = curTime - lastTap;
-				if (tapLen < 500 && tapLen > 0) {
-					event.preventDefault();
-				}
-				lastTap = curTime;
-			};
-		})());
 	};
 
 	/* Accepts a HTML DOM element */
@@ -191,97 +82,101 @@ import config from "../assets/config.js";
 	};
 
 	const gestureTouchStartListener = function (event) {
-		let touchObj=event.changedTouches[0];
-		startX=touchObj.pageX;
-		startY=touchObj.pageY;
+		const touchObj = event.changedTouches[0];
+		TouchEventVariables.startX = touchObj.pageX;
+		TouchEventVariables.startY = touchObj.pageY;
 		// record time when finger first makes contact with surface
-		startTime=new Date().getTime();
-		isGesture=true;
-		thresholdPassed=false;
+		TouchEventVariables.startTime = new Date().getTime();
+		TouchEventVariables.isGesture = true;
+		TouchEventVariables.thresholdPassed = false;
 		event.preventDefault();
 	};
 
 	const gestureTouchEndListener = function (event) {
+		let {
+			isGesture, endX, endY, deltaX, deltaY, startX, startY,
+			elapsedTime, startTime, swipeAngle, swipeDirection,
+			thresholdPassed, swipeAngleMaxThreshold, swipeAngleMinThreshold } = TouchEventVariables;
 		if(isGesture) {
-			let touchObj=event.changedTouches[0];
-			endX=touchObj.pageX;
-			endY=touchObj.pageY;
+			const touchObj = event.changedTouches[0];
+			endX = touchObj.pageX;
+			endY = touchObj.pageY;
 
 			// get horizontal dist traveled by finger while in contact with surface
-			deltaX=endX - startX;
+			deltaX = endX - startX;
 			// get vertical dist traveled by finger while in contact with surface
-			deltaY=endY - startY;
+			deltaY = endY - startY;
 			// get time elapsed
-			elapsedTime=new Date().getTime() - startTime;
+			elapsedTime = new Date().getTime() - startTime;
 			// calculate the angle of swipe
-			swipeAngle=Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
-			thresholdPassed=(Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
+			swipeAngle = Math.abs(Math.atan(deltaY/deltaX) * (180/Math.PI));
+			thresholdPassed = (Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold);
 			if (elapsedTime <= allowedTime) {
 				//  && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaY) > swipeThreshold
 				if(deltaX > 0 && deltaY < 0) { // QUADRANT-I
-					if(swipeAngle<swipeAngleMinThreshold) {
-						swipeDirection=["east"];
+					if(swipeAngle < swipeAngleMinThreshold) {
+						swipeDirection = ["east"];
 					}
-					else if(swipeAngle>swipeAngleMaxThreshold) {
-						swipeDirection=["north"];
+					else if(swipeAngle > swipeAngleMaxThreshold) {
+						swipeDirection = ["north"];
 					}
 					else if(thresholdPassed) {
-						swipeDirection=["east", "north"];
+						swipeDirection = ["east", "north"];
 					}
 				}
 				else if(deltaX < 0 && deltaY < 0) { // QUADRANT-II
-					if(swipeAngle<swipeAngleMinThreshold) {
-						swipeDirection=["west"];
+					if(swipeAngle < swipeAngleMinThreshold) {
+						swipeDirection = ["west"];
 					}
 					else if(swipeAngle>swipeAngleMaxThreshold) {
-						swipeDirection=["north"];
+						swipeDirection = ["north"];
 					}
 					else if(thresholdPassed) {
-						swipeDirection=["west", "north"];
+						swipeDirection = ["west", "north"];
 					}
 				}
 				else if(deltaX < 0 && deltaY > 0) { // QUADRANT-III
 					if(swipeAngle<swipeAngleMinThreshold) {
-						swipeDirection=["west"];
+						swipeDirection = ["west"];
 					}
 					else if(swipeAngle>swipeAngleMaxThreshold) {
-						swipeDirection=["south"];
+						swipeDirection = ["south"];
 					}
 					else if(thresholdPassed) {
-						swipeDirection=["west", "south"];
+						swipeDirection = ["west", "south"];
 					}
 				}
 				else if(deltaX > 0 && deltaY > 0) { // QUADRANT-IV
-					if(swipeAngle<swipeAngleMinThreshold) {
-						swipeDirection=["east"];
+					if(swipeAngle < swipeAngleMinThreshold) {
+						swipeDirection = ["east"];
 					}
-					else if(swipeAngle>swipeAngleMaxThreshold) {
-						swipeDirection=["south"];
+					else if(swipeAngle > swipeAngleMaxThreshold) {
+						swipeDirection = ["south"];
 					}
 					else if(thresholdPassed) {
-						swipeDirection=["east", "south"];
+						swipeDirection = ["east", "south"];
 					}
 				}
 				handleGesture(swipeDirection);
 			}
-			isGesture=false;
+			isGesture = false;
 		}
 		event.preventDefault();
 	};
 
 	const unregisterGestures = function () {
-		const bodyCntr = document.querySelector(".body-container");
-		if (bodyCntr !== null) {
-			bodyCntr.removeEventListener("touchstart", gestureTouchStartListener, { passive: false });
-			bodyCntr.removeEventListener("touchend", gestureTouchEndListener, { passive: false });
+		const bodyContainer = document.querySelector(".body-container");
+		if (bodyContainer !== null) {
+			bodyContainer.removeEventListener("touchstart", gestureTouchStartListener);
+			bodyContainer.removeEventListener("touchend", gestureTouchEndListener);
 		}
 	};
 
 	const registerGestures = function () {
-		const bodyCntr = document.querySelector(".body-container");
-		if (bodyCntr !== null) {
-			bodyCntr.addEventListener("touchstart", gestureTouchStartListener, { passive: false });
-			bodyCntr.addEventListener("touchend", gestureTouchEndListener, { passive: false });
+		const bodyContainer = document.querySelector(".body-container");
+		if (bodyContainer !== null) {
+			bodyContainer.addEventListener("touchstart", gestureTouchStartListener, { passive: false });
+			bodyContainer.addEventListener("touchend", gestureTouchEndListener, { passive: false });
 		}
 	};
 
@@ -305,11 +200,11 @@ import config from "../assets/config.js";
 			node.innerHTML = '&#9829;';
 		});
 
-		// if (!isPortableMode || isPortableMode && config.useGamepad) {
 		// Always register keydown event
 		document.addEventListener('keydown', function (event) {
 			event.stopPropagation();
 			event.preventDefault();
+			let { gameState, interval } = GameConfig;
 			if (event.code === 'ArrowUp' || event.code === 'KeyW') {
 				if (event.shiftKey && (direction === 'east' || direction === 'west')) {
 					handleDoubleDirectionChange(['north', direction]);
@@ -351,7 +246,6 @@ import config from "../assets/config.js";
 				resetEventHandler();
 			}
 		});
-		// }
 
 		if (isPortableMode) {
 			document.querySelector('.game-actions').classList.remove('hide');
@@ -365,9 +259,9 @@ import config from "../assets/config.js";
 					event.preventDefault();
 
 					disableResetButton();
-					if (gameState === 'stopped' || gameState === undefined) {
+					if (GameConfig.gameState === 'stopped' || GameConfig.gameState === undefined) {
 						playEventHandler();
-					} else if (gameState !== 'over') {
+					} else if (GameConfig.gameState !== 'over') {
 						pauseEventHandler();
 					}
 				},
@@ -385,7 +279,7 @@ import config from "../assets/config.js";
 						return;
 					}
 
-					if (interval === undefined) {
+					if (GameConfig.interval === undefined) {
 						//reset
 						resetEventHandler();
 					}
@@ -400,7 +294,7 @@ import config from "../assets/config.js";
 		window.addEventListener(
 			'blur',
 			function () {
-				if (gameState === 'play') {
+				if (GameConfig.gameState === 'play') {
 					pauseEventHandler();
 				}
 			},
@@ -413,8 +307,8 @@ import config from "../assets/config.js";
 			if(gesture.length===2) {
 				// if snake is moving horizontally, swap gesture directions
 				let isSnakeMovingHorizontally=(direction==="east" || direction==="west");
-				movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
-				movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
+				GameConfig.movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 1 : 0]);
+				GameConfig.movesQueue.unshift(gesture[isSnakeMovingHorizontally ? 0 : 1]);
 			}
 			else {
 				handleDirectionChange(gesture[0]);
@@ -423,13 +317,14 @@ import config from "../assets/config.js";
 	};
 
 	const handleDoubleDirectionChange = function (doubleDirection) {
-		if (gameState === 'play' /*&& movesQueue[0]!==doubleDirection[0]*/) {
-			movesQueue.unshift(doubleDirection[0]);
-			movesQueue.unshift(doubleDirection[1]);
+		if (GameConfig.gameState === 'play' /*&& GameConfig.movesQueue[0]!==doubleDirection[0]*/) {
+			GameConfig.movesQueue.unshift(doubleDirection[0]);
+			GameConfig.movesQueue.unshift(doubleDirection[1]);
 		}
 	};
 
 	const handleDirectionChange = function (directionChangedTo) {
+		let { gameState, movesQueue } = GameConfig;
 		if (gameState === 'play' && movesQueue[0] !== directionChangedTo) {
 			if (directionChangedTo === 'north' && movesQueue[0] !== 'south' && direction !== 'south') {
 				//north
@@ -449,12 +344,12 @@ import config from "../assets/config.js";
 
 	const playEventHandler = function () {
 		updateRowColumnDirection();
-		updateLevel(+retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1);
+		updateLevel(+retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1);
 		setSpeed();
 		setSpeedInterval();
 		// setTimer();
 		setScorer();
-		if (gameState === undefined) {
+		if (GameConfig.gameState === undefined) {
 			updateLife(true);
 			generateFood();
 		}
@@ -468,20 +363,20 @@ import config from "../assets/config.js";
 	};
 
 	const pauseEventHandler = function () {
-		if (gameState !== 'paused' && gameState !== 'lifeLost') {
-			interval = clearAndResetInterval(interval);
-			timerInterval = clearAndResetInterval(timerInterval);
-			scoreInterval = clearAndResetInterval(scoreInterval);
-			flickerInterval = clearAndResetInterval(flickerInterval);
+		if (GameConfig.gameState !== 'paused' && GameConfig.gameState !== 'lifeLost') {
+			GameConfig.interval = clearAndResetInterval(GameConfig.interval);
+			GameConfig.timerInterval = clearAndResetInterval(GameConfig.timerInterval);
+			GameConfig.scoreInterval = clearAndResetInterval(GameConfig.scoreInterval);
+			GameConfig.flickerInterval = clearAndResetInterval(GameConfig.flickerInterval);
 			setGameState('paused');
 			updateMessage(messages.RESUME);
 			if (isPortableMode) {
 				updateActionButtonLabel(messages.PLAY_BUTTON_LABEL);
 				disableResetButton(false);
 			}
-		} else if (gameState === 'paused' || gameState === 'lifeLost') {
+		} else if (GameConfig.gameState === 'paused' || GameConfig.gameState === 'lifeLost') {
 			removeTrail();
-			if (gameState === 'lifeLost') {
+			if (GameConfig.gameState === 'lifeLost') {
 				if (!isMazeMode()) {
 					clearNodes();
 				}
@@ -519,23 +414,23 @@ import config from "../assets/config.js";
 
 	const defaultSettings = function () {
 		updateRowColumnDirection();
-		interval = undefined;
-		flickerInterval = clearAndResetInterval(flickerInterval);
-		meals = [];
+		GameConfig.interval = undefined;
+		GameConfig.flickerInterval = clearAndResetInterval(GameConfig.flickerInterval);
+		GameConfig.meals = [];
 
-		if (gameState === 'over') {
+		if (GameConfig.gameState === 'over') {
 			setGameState(); // purposefully setting state to undefined
 			snakeLife = 3;
 			setSnakeLength();
-			score = 0;
-			scoreNode.innerText = score;
+			GameConfig.score = 0;
+			GameConfig.scoreNode.innerText = GameConfig.score;
 			// time=0.0;
 			// timerNode.innerText="0s";
 			setSpeed();
 		} else {
 			if (!isMazeMode()) {
-				if (prevSnakeLength < nodes.length + removeNodes.length) {
-					setSnakeLength(nodes.length + removeNodes.length);
+				if (prevSnakeLength < GameConfig.nodes.length + GameConfig.removeNodes.length) {
+					setSnakeLength(GameConfig.nodes.length + GameConfig.removeNodes.length);
 				}
 			}
 		}
@@ -550,11 +445,11 @@ import config from "../assets/config.js";
 	};
 
 	const setDirection = function (_direction) {
-		direction = _direction || defaultDirection;
+		direction = _direction || DefaultDirection;
 	};
 
 	const setGameState = function (state) {
-		gameState = state;
+		GameConfig.gameState = state;
 	};
 
 	const applySnakeBodyCurve = function (_directionChangedTo) {
@@ -579,12 +474,12 @@ import config from "../assets/config.js";
 
 	// INTERVALS
 	const setSpeedInterval = function (_speed) {
-		// making sure the interval is cleared before setting a new interval
-		interval = clearAndResetInterval(interval);
-		interval = setInterval(function () {
-			if (movesQueue.length > 0) {
+		// making sure the GameConfig.interval is cleared before setting a new interval
+		GameConfig.interval = clearAndResetInterval(GameConfig.interval);
+		GameConfig.interval = setInterval(function () {
+			if (GameConfig.movesQueue.length > 0) {
 				prevDirection = direction;
-				setDirection(movesQueue.pop());
+				setDirection(GameConfig.movesQueue.pop());
 				applySnakeBodyCurve(direction);
 			}
 			moveSnake();
@@ -592,15 +487,15 @@ import config from "../assets/config.js";
 	};
 
 	// const setTimer = function() {
-	//     timerInterval=setInterval(function() {
+	//     GameConfig.timerInterval=setInterval(function() {
 	//         timerNode.innerText=(time+=.1).toFixed(1) + "s";
 	//     },100);
 	// };
 
 	const setScorer = function () {
-		scoreInterval = setInterval(function () {
-			score += level * snakeLife;
-			scoreNode.innerText = score;
+		GameConfig.scoreInterval = setInterval(function () {
+			GameConfig.score += GameConfig.level * snakeLife;
+			GameConfig.scoreNode.innerText = GameConfig.score;
 		}, 100);
 	};
 
@@ -654,11 +549,12 @@ import config from "../assets/config.js";
 	};
 
 	const getDefaultSnakeLength = function () {
+		const { level, levelUpPeriod } = GameConfig;
 		return isClassicMode() ? (level === 1 ? 3 : levelUpPeriod * (level - 1)) : 10 + level;
 	};
 
 	const updateScore = function (points) {
-		score += (points || 10) * level;
+		GameConfig.score += (points || 10) * GameConfig.level;
 	};
 
 	const removeTrail = function () {
@@ -690,8 +586,8 @@ import config from "../assets/config.js";
 	};
 
 	const updateSwipeAngleThresholds = function() {
-	    swipeAngleMinThreshold = isMazeMode() ? 45 : defaultSwipeAngleMinThreshold;
-	    swipeAngleMaxThreshold = isMazeMode() ? 45 : defaultSwipeAngleMaxThreshold;
+	    Thresholds.swipeAngleMinThreshold = isMazeMode() ? 45 : defaultSwipeAngleMinThreshold;
+			Thresholds.swipeAngleMaxThreshold = isMazeMode() ? 45 : defaultSwipeAngleMaxThreshold;
 	};
 
 	const disablePlayPauseButton = function (isDisabled) {
@@ -713,7 +609,7 @@ import config from "../assets/config.js";
 	};
 
 	const calculateSpeed = function (lvl) {
-		lvl = lvl || level;
+		lvl = lvl || GameConfig.level;
 		if (isChallengeMode()) {
 			return classicModeBaseTime - (reduction - 20) * lvl;
 		}
@@ -728,14 +624,13 @@ import config from "../assets/config.js";
 	};
 
 	const updateLevel = function (lvl) {
-		level = lvl;
-		levelNode.innerText = lvl;
+		GameConfig.level = lvl;
+		GameConfig.levelNode.innerText = lvl;
 	};
 
 	const calculateMaxLevels = function () {
-		let _speed;
-		let lvl = 1;
-		for (; ; lvl++) {
+		let _speed, lvl;
+		for (lvl = 1; ; lvl++) {
 			_speed = calculateSpeed(lvl);
 			if (isChallengeMode() && _speed === classicModeSpeedCutOff) {
 				break;
@@ -745,29 +640,28 @@ import config from "../assets/config.js";
 				break;
 			}
 		}
-		maxLevel = lvl;
+		GameConfig.maxLevel = lvl;
 	};
 
 	const setGameProgressFactor = function () {
 		let maxProgressPercentage = 100;
 		if (isClassicMode()) {
-			gameProgressFactor = maxProgressPercentage / (maxLevel * levelUpPeriod);
+			GameConfig.gameProgressFactor = maxProgressPercentage / (GameConfig.maxLevel * GameConfig.levelUpPeriod);
 		} else if (isChallengeMode()) {
-			let thresholds = predefinedThresholdsForChallengeMode();
-			gameProgressFactor = maxProgressPercentage / Math.pow(thresholds[1] - thresholds[0], 2);
+			const thresholds = predefinedThresholdsForChallengeMode();
+			GameConfig.gameProgressFactor = maxProgressPercentage / Math.pow(thresholds[1] - thresholds[0], 2);
 		} else if (isMazeMode()) {
-			let mazePathLength = document.querySelectorAll('.maze-path').length;
-			gameProgressFactor = maxProgressPercentage / mazePathLength;
+			GameConfig.gameProgressFactor = maxProgressPercentage / document.querySelectorAll('.maze-path').length;
 		}
 	};
 
 	const clearNodes = function () {
-		nodes.concat(removeNodes).forEach(function (entry) {
+		GameConfig.nodes.concat(GameConfig.removeNodes).forEach(function (entry) {
 			removePath(entry);
 		});
 		setTimeout(function () {
-			nodes = [];
-			removeNodes = [];
+			GameConfig.nodes = [];
+			GameConfig.removeNodes = [];
 		}, 0);
 	};
 
@@ -775,8 +669,8 @@ import config from "../assets/config.js";
 		row = southThreshold;
 		//column=Math.round((eastThreshold+westThreshold)/2);
 		column = westThreshold;
-		setDirection(defaultDirection);
-		movesQueue = [];
+		setDirection(DefaultDirection);
+		GameConfig.movesQueue = [];
 	};
 
 	const updateRowColumnDirection = function () {
@@ -784,7 +678,7 @@ import config from "../assets/config.js";
 			let startingNode;
 			let data;
 
-			if (gameState === 'lifeLost') {
+			if (GameConfig.gameState === 'lifeLost') {
 				startingNode = document.querySelector('.maze-path.head');
 			} else {
 				startingNode = document.querySelector('.maze-path.begin');
@@ -896,7 +790,7 @@ import config from "../assets/config.js";
 					'sw-nw'
 				);
 				node.classList.add('empty');
-				if (!isMazeMode() && wasTail && gameState === 'play') {
+				if (!isMazeMode() && wasTail && GameConfig.gameState === 'play') {
 					node.classList.add('trail');
 				}
 			}
@@ -904,15 +798,15 @@ import config from "../assets/config.js";
 	};
 
 	const addPath = function () {
-		for (let node, index = 0; index < nodes.length; index++) {
-			node = nodeSelection(nodes[index]);
+		for (let node, index = 0; index < GameConfig.nodes.length; index++) {
+			node = nodeSelection(GameConfig.nodes[index]);
 			if (node) {
 				node.classList.remove('empty', 'head', 'body', 'trail', 'nw-ne', 'ne-se', 'se-sw', 'sw-nw');
-				node.classList.add('path', index === nodes.length - 1 ? 'head' : 'body');
+				node.classList.add('path', index === GameConfig.nodes.length - 1 ? 'head' : 'body');
 				if (index === 0) {
 					node.classList.add('tail');
 				}
-				if (index === nodes.length - 1) {
+				if (index === GameConfig.nodes.length - 1) {
 					let headClass = '';
 					if (direction === 'north') {
 						headClass = 'nw-ne';
@@ -971,7 +865,7 @@ import config from "../assets/config.js";
 			let emptyNode = emptyNodes[Math.floor(Math.random() * emptyNodes.length)];
 			let randomCoordinate = emptyNode.getAttribute('data').split(',');
 			let entry = [+randomCoordinate[0], +randomCoordinate[1]];
-			meals.push(entry.toString());
+			GameConfig.meals.push(entry.toString());
 			addEntity(entry, 'food');
 			removeCrossHair();
 			addCrossHair(entry);
@@ -982,9 +876,9 @@ import config from "../assets/config.js";
 	const induceFlickerEffect = function (flickerCount, vibrateDuration) {
 		flickerCount = flickerCount || 6;
 		let paths = document.querySelectorAll('.path');
-		flickerInterval = setInterval(function () {
+		GameConfig.flickerInterval = setInterval(function () {
 			if (flickerCount === -1) {
-				flickerInterval = clearAndResetInterval(flickerInterval);
+				GameConfig.flickerInterval = clearAndResetInterval(GameConfig.flickerInterval);
 				return;
 			}
 			paths.forEach(function (path) {
@@ -997,8 +891,8 @@ import config from "../assets/config.js";
 
 	// LOGIC TO INDUCE A PAUSE BEFORE CONTINUING
 	const inducePause = function (milliseconds) {
-		if (gameState !== 'paused') {
-			interval = clearAndResetInterval(interval);
+		if (GameConfig.gameState !== 'paused') {
+			GameConfig.interval = clearAndResetInterval(GameConfig.interval);
 			setGameState('paused');
 		}
 		const pauseInterval = setInterval(function () {
@@ -1011,7 +905,7 @@ import config from "../assets/config.js";
 	// LOGIC TO CHECK IF GAME IS OVER
 	const checkGameOver = function () {
 		if (isClassicMode() && speed < speedCutOff) {
-			level--;
+			GameConfig.level--;
 			gameOver(10, messages.WELL_DONE, true, true);
 			document.querySelectorAll('.food').forEach(function (node) {
 				removeEntityFromNode(node, 'food');
@@ -1031,8 +925,8 @@ import config from "../assets/config.js";
 		let unlockedLevels = +retrieveItem('unlocked' + capitalize(selectedMode) + 'Levels') || 1;
 		let value = {
 			timestamp: new Date().getTime(),
-			level: level,
-			score: score,
+			level: GameConfig.level,
+			score: GameConfig.score,
 			//"time": time,
 			selectedMode: selectedMode,
 		};
@@ -1040,7 +934,7 @@ import config from "../assets/config.js";
 		if (stats !== null) {
 			stats = JSON.parse(stats);
 			let found = stats.findIndex(function (stat) {
-				return stat.score < score;
+				return stat.score < GameConfig.score;
 			});
 
 			if (found !== -1) {
@@ -1053,13 +947,13 @@ import config from "../assets/config.js";
 			persistItem('snake-game-stats', JSON.stringify([value]));
 		}
 
-		// update unlockedLevels if current level is greater than already stored
-		if ((isClassicMode() && level > unlockedLevels) || incrementLevel) {
-			incrementLevel = false;
+		// update unlockedLevels if current GameConfig.level is greater than already stored
+		if ((isClassicMode() && GameConfig.level > unlockedLevels) || GameConfig.incrementLevel) {
+			GameConfig.incrementLevel = false;
 			if (!isClassicMode()) {
-				level++;
+				GameConfig.level++;
 			}
-			persistItem('unlocked' + capitalize(selectedMode) + 'Levels', level);
+			persistItem('unlocked' + capitalize(selectedMode) + 'Levels', GameConfig.level);
 		}
 
 		updateLeaderboard();
@@ -1067,14 +961,14 @@ import config from "../assets/config.js";
 
 	// MAZE MODE METHODS
 	// const randomMazeCoordinatesSelector = function() {
-	//     selectedCoordinates=coordinates[Math.floor(Math.random() * 12)];
-	//     return selectedCoordinates;
+	//     GameConfig.selectedCoordinates=coordinates[Math.floor(Math.random() * 12)];
+	//     return GameConfig.selectedCoordinates;
 	// };
 
 	const mazeCoordinatesSelector = function () {
-		let selectedModeLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1;
-		selectedCoordinates = coordinates[selectedModeLevel - 1];
-		return selectedCoordinates;
+		let selectedModeLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1;
+		GameConfig.selectedCoordinates = (coordinates)[selectedModeLevel - 1];
+		return GameConfig.selectedCoordinates;
 	};
 
 	const clearMazeModeUI = function () {
@@ -1095,7 +989,8 @@ import config from "../assets/config.js";
 		gridDimension = gridDimension || rowsCount;
 		mazeCoordinatesSelector();
 
-		let dimension = Math.sqrt(selectedCoordinates.length);
+		let selectedCoordinatesCount = GameConfig.selectedCoordinates.length;
+		let dimension = Math.sqrt(selectedCoordinatesCount);
 		let factor = gridDimension / dimension;
 		let prevCoordinate;
 		let cls;
@@ -1107,12 +1002,12 @@ import config from "../assets/config.js";
 		let prevRow;
 		let prevColumn;
 		let mazeCls = 'maze-path';
-		let selectedCoordinatesCount = selectedCoordinates.length;
+
 		let extract = function (coordinateValue) {
 			return Math.round((coordinateValue + 1) * factor - 1);
 		};
 
-		selectedCoordinates.forEach(function (coordinate, index) {
+		GameConfig.selectedCoordinates.forEach(function (coordinate, index) {
 			cls = '';
 			row = extract(coordinate[0]);
 			column = extract(coordinate[1]);
@@ -1173,7 +1068,7 @@ import config from "../assets/config.js";
 
 	// CHALLENGE MODE METHODS
 	const predefinedThresholdsForChallengeMode = function () {
-		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1;
+		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1;
 		let challengeLevelCoordinates;
 		let immersiveExp = isImmersiveExperienceOn();
 		if (selectedLevel <= 3) {
@@ -1286,7 +1181,7 @@ import config from "../assets/config.js";
 		document.querySelector('.levels div.selected').classList.remove('selected');
 		this.classList.add('selected');
 		let lvl = +this.getAttribute('data');
-		persistItem('selected' + capitalize(selectedMode) + 'Level', lvl);
+		persistItem('selected' + capitalize(selectedMode) + 'level', lvl);
 		if (isMazeMode()) {
 			generateMazePath();
 		}
@@ -1353,7 +1248,7 @@ import config from "../assets/config.js";
 		let div = document.createElement('DIV');
 		let clone;
 
-		for (let lvl = 1; lvl <= maxLevel; lvl++) {
+		for (let lvl = 1; lvl <= GameConfig.maxLevel; lvl++) {
 			clone = div.cloneNode();
 			clone.setAttribute('data', lvl);
 			clone.setAttribute('class', 'level');
@@ -1363,7 +1258,7 @@ import config from "../assets/config.js";
 	};
 
 	const updateModeLevels = function () {
-		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1;
+		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1;
 		let unlockedLevels = +retrieveItem('unlocked' + capitalize(selectedMode) + 'Levels') || 1;
 
 		document.querySelectorAll('.selectLevel .levels .level').forEach(function (node, index) {
@@ -1377,7 +1272,7 @@ import config from "../assets/config.js";
 			} else {
 				if (unlockedLevels < index + 1) {
 					node.classList.add('disabled');
-					// remove click event listener for disabled level
+					// remove click event listener for disabled GameConfig.level
 					node.removeEventListener(isPortableMode ? 'touchstart' : 'click', levelSelectionEventHandler);
 				} else {
 					node.classList.add('enabled');
@@ -1414,8 +1309,8 @@ import config from "../assets/config.js";
 		document.querySelectorAll('.settings .options input').forEach(function (node) {
 			avoidTouchEventsFor(node);
 			node.addEventListener('click', function (event) {
-				const config = JSON.parse(retrieveItem('snake-game-settings'));
-				persistItem('snake-game-settings', JSON.stringify({ ...config, [event.target.id]: event.target.checked }));
+				const cfg = JSON.parse(retrieveItem('snake-game-settings'));
+				persistItem('snake-game-settings', JSON.stringify({ ...cfg, [event.target.id]: event.target.checked }));
 				// Update option specific setup
 				if (event.target.id === 'useGamepad') {
 					updateGamepadSetup();
@@ -1495,9 +1390,9 @@ import config from "../assets/config.js";
 	const gameOver = function (count, msg, bypassSnakeLife, cleanup) {
 		let vibrateDuration = 250;
 		bypassSnakeLife = bypassSnakeLife === undefined ? false : bypassSnakeLife;
-		interval = clearAndResetInterval(interval);
-		timerInterval = clearAndResetInterval(timerInterval);
-		scoreInterval = clearAndResetInterval(scoreInterval);
+		GameConfig.interval = clearAndResetInterval(GameConfig.interval);
+		GameConfig.timerInterval = clearAndResetInterval(GameConfig.timerInterval);
+		GameConfig.scoreInterval = clearAndResetInterval(GameConfig.scoreInterval);
 
 		if (cleanup) {
 			removeTrail();
@@ -1546,13 +1441,13 @@ import config from "../assets/config.js";
 	const moveSnake = function () {
 		let onValidPathCls = isMazeMode() ? 'maze-path' : 'body';
 		if (direction === 'north') {
-			if (nodes.length < snakeLength) {
+			if (GameConfig.nodes.length < snakeLength) {
 				if (row > northThreshold && onValidMazePath([row - 1, column])) {
-					if (nodes.length > 0) {
-						nodes.push([--row, column]);
+					if (GameConfig.nodes.length > 0) {
+						GameConfig.nodes.push([--row, column]);
 					} else {
 						row = row - (row === southThreshold ? 0 : 1);
-						nodes.push([row, column]);
+						GameConfig.nodes.push([row, column]);
 					}
 				} else {
 					gameOver(7);
@@ -1560,19 +1455,19 @@ import config from "../assets/config.js";
 				}
 				// useful for maze-mode
 				if (onValidPath([row, column], onValidPathCls)) {
-					removePath(removeNodes.shift());
+					removePath(GameConfig.removeNodes.shift());
 					addPath();
 				} else {
 					gameOver(7);
 					return;
 				}
 			} else {
-				removeNodes.push(nodes.shift());
+				GameConfig.removeNodes.push(GameConfig.nodes.shift());
 				if (row > northThreshold && onValidPath([row - 1, column], onValidPathCls)) {
-					nodes.push([--row, column]);
+					GameConfig.nodes.push([--row, column]);
 					// useful for maze-mode
 					if (onValidPath([row, column], onValidPathCls)) {
-						removePath(removeNodes.shift());
+						removePath(GameConfig.removeNodes.shift());
 						addPath();
 					} else {
 						gameOver(7);
@@ -1584,13 +1479,13 @@ import config from "../assets/config.js";
 				}
 			}
 		} else if (direction === 'south') {
-			if (nodes.length < snakeLength) {
+			if (GameConfig.nodes.length < snakeLength) {
 				if (row < southThreshold && onValidMazePath([row + 1, column])) {
-					if (nodes.length > 0) {
-						nodes.push([++row, column]);
+					if (GameConfig.nodes.length > 0) {
+						GameConfig.nodes.push([++row, column]);
 					} else {
 						row = row + (row === southThreshold ? 0 : 1);
-						nodes.push([row, column]);
+						GameConfig.nodes.push([row, column]);
 					}
 				} else {
 					gameOver(7);
@@ -1598,19 +1493,19 @@ import config from "../assets/config.js";
 				}
 				// useful for maze-mode
 				if (onValidPath([row, column], onValidPathCls)) {
-					removePath(removeNodes.shift());
+					removePath(GameConfig.removeNodes.shift());
 					addPath();
 				} else {
 					gameOver(7);
 					return;
 				}
 			} else {
-				removeNodes.push(nodes.shift());
+				GameConfig.removeNodes.push(GameConfig.nodes.shift());
 				if (row < southThreshold && onValidPath([row + 1, column], onValidPathCls)) {
-					nodes.push([++row, column]);
+					GameConfig.nodes.push([++row, column]);
 					// useful for maze-mode
 					if (onValidPath([row, column], onValidPathCls)) {
-						removePath(removeNodes.shift());
+						removePath(GameConfig.removeNodes.shift());
 						addPath();
 					} else {
 						gameOver(7);
@@ -1622,13 +1517,13 @@ import config from "../assets/config.js";
 				}
 			}
 		} else if (direction === 'east') {
-			if (nodes.length < snakeLength) {
+			if (GameConfig.nodes.length < snakeLength) {
 				if (column < eastThreshold && onValidMazePath([row, column + 1])) {
-					if (nodes.length > 0) {
-						nodes.push([row, ++column]);
+					if (GameConfig.nodes.length > 0) {
+						GameConfig.nodes.push([row, ++column]);
 					} else {
 						column = column + (column === eastThreshold ? 0 : 1);
-						nodes.push([row, column]);
+						GameConfig.nodes.push([row, column]);
 					}
 				} else {
 					gameOver(7);
@@ -1636,19 +1531,19 @@ import config from "../assets/config.js";
 				}
 				// useful for maze-mode
 				if (onValidPath([row, column], onValidPathCls)) {
-					removePath(removeNodes.shift());
+					removePath(GameConfig.removeNodes.shift());
 					addPath();
 				} else {
 					gameOver(7);
 					return;
 				}
 			} else {
-				removeNodes.push(nodes.shift());
+				GameConfig.removeNodes.push(GameConfig.nodes.shift());
 				if (column < eastThreshold && onValidPath([row, column + 1], onValidPathCls)) {
-					nodes.push([row, ++column]);
+					GameConfig.nodes.push([row, ++column]);
 					// useful for maze-mode
 					if (onValidPath([row, column], onValidPathCls)) {
-						removePath(removeNodes.shift());
+						removePath(GameConfig.removeNodes.shift());
 						addPath();
 					} else {
 						gameOver(7);
@@ -1660,13 +1555,13 @@ import config from "../assets/config.js";
 				}
 			}
 		} else if (direction === 'west') {
-			if (nodes.length < snakeLength) {
+			if (GameConfig.nodes.length < snakeLength) {
 				if (column > westThreshold && onValidMazePath([row, column - 1])) {
-					if (nodes.length > 0) {
-						nodes.push([row, --column]);
+					if (GameConfig.nodes.length > 0) {
+						GameConfig.nodes.push([row, --column]);
 					} else {
 						column = column - (column === westThreshold ? 0 : 1);
-						nodes.push([row, column]);
+						GameConfig.nodes.push([row, column]);
 					}
 				} else {
 					gameOver(7);
@@ -1674,19 +1569,19 @@ import config from "../assets/config.js";
 				}
 				// useful for maze-mode
 				if (onValidPath([row, column], onValidPathCls)) {
-					removePath(removeNodes.shift());
+					removePath(GameConfig.removeNodes.shift());
 					addPath();
 				} else {
 					gameOver(7);
 					return;
 				}
 			} else {
-				removeNodes.push(nodes.shift());
+				GameConfig.removeNodes.push(GameConfig.nodes.shift());
 				if (column > westThreshold && onValidPath([row, column - 1], onValidPathCls)) {
-					nodes.push([row, --column]);
+					GameConfig.nodes.push([row, --column]);
 					// useful for maze-mode
 					if (onValidPath([row, column], onValidPathCls)) {
-						removePath(removeNodes.shift());
+						removePath(GameConfig.removeNodes.shift());
 						addPath();
 					} else {
 						gameOver(7);
@@ -1702,7 +1597,7 @@ import config from "../assets/config.js";
 		updateGameProgress();
 		// increment the count of maze path traversed
 		if (isMazeMode()) {
-			mazePathTraversed++;
+			GameConfig.mazePathTraversed++;
 		}
 		// increment the count of challenge arena covered
 		if (isChallengeMode()) {
@@ -1714,12 +1609,12 @@ import config from "../assets/config.js";
 
 	const constructMessage = function () {
 		let msg;
-		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1;
+		let selectedLevel = +retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1;
 		let unlockedLevels = +retrieveItem('unlocked' + capitalize(selectedMode) + 'Levels') || 1;
 
-		if (selectedLevel === unlockedLevels && selectedLevel < maxLevel) {
+		if (selectedLevel === unlockedLevels && selectedLevel < GameConfig.maxLevel) {
 			msg = messages.CONGRATULATIONS + messages.COMMA + messages.LEVEL_UNLOCKED + messages.SPACE + messages.RESET;
-			incrementLevel = true;
+			GameConfig.incrementLevel = true;
 		} else if (selectedLevel < unlockedLevels) {
 			msg = messages.CONGRATULATIONS + messages.EXCLAMATION + messages.SPACE + messages.RESET;
 		} else {
@@ -1747,31 +1642,31 @@ import config from "../assets/config.js";
 		let dangerIndex;
 		let currentLocation = [row, column];
 
-		mealIndex = meals.indexOf(currentLocation.toString());
+		mealIndex = GameConfig.meals.indexOf(currentLocation.toString());
 		if (mealIndex !== -1) {
-			meals.splice(mealIndex, 1);
+			GameConfig.meals.splice(mealIndex, 1);
 			removeEntity(currentLocation, 'food', 30);
 			updateScore();
 			generateFood();
 			snakeLength += isChallengeMode() ? 5 : 1;
 
-			if (isClassicMode() && snakeLength % levelUpPeriod === 0) {
-				levelNode.innerText = ++level;
+			if (isClassicMode() && snakeLength % GameConfig.levelUpPeriod === 0) {
+				GameConfig.levelNode.innerText = ++GameConfig.level;
 				setSpeed();
 				if (!checkGameOver(speed)) {
 					inducePause(100);
 					triggerLevelUp();
 				} else {
-					levelNode.innerText = level;
+					GameConfig.levelNode.innerText = GameConfig.level;
 				}
 			}
 			return;
 		}
 
-		dangerIndex = dangers.indexOf(currentLocation.toString());
+		dangerIndex = GameConfig.dangers.indexOf(currentLocation.toString());
 		if (dangerIndex !== -1) {
 			loseLife();
-			dangers.splice(dangerIndex, 1);
+			GameConfig.dangers.splice(dangerIndex, 1);
 			removeEntity(currentLocation, 'danger');
 			induceFlickerEffect();
 			inducePause();
@@ -1783,39 +1678,43 @@ import config from "../assets/config.js";
 
 	// LOGIC FOR UPDATING GAME PROGRESS BAR
 	const updateGameProgress = function () {
-		gameProgressBar.style.borderColor = '#00ff0d'; // green
-		gameProgressBar.style.background = '#00ff0d'; // green
-		if (isClassicMode() && snakeLength > 3) {
-			gameProgressBar.style.width = gameProgressFactor * snakeLength + '%';
+		GameConfig.gameProgressBar.style.borderColor = '#00ff0d'; // green
+		GameConfig.gameProgressBar.style.background = '#00ff0d'; // green
+		if (isClassicMode()) {
+			GameConfig.gameProgressBar.style.width = GameConfig.gameProgressFactor * snakeLength + '%';
 			return;
 		}
 		if (isChallengeMode()) {
-			gameProgressBar.style.width =
-				gameProgressFactor * document.querySelectorAll('.game-arena-display div.path').length + '%';
+			GameConfig.gameProgressBar.style.width =
+				GameConfig.gameProgressFactor * document.querySelectorAll('.game-arena-display div.path').length + '%';
 			return;
 		}
 		if (isMazeMode()) {
 			// maintain a maze path traversed count
-			gameProgressBar.style.width = gameProgressFactor * mazePathTraversed + '%';
+			GameConfig.gameProgressBar.style.width = GameConfig.gameProgressFactor * GameConfig.mazePathTraversed + '%';
 		}
 	};
 
 	// LOGIC TO RESET GAME PROGRESS BAR
 	const resetGameProgress = function () {
-		gameProgressBar.style.width = '0px';
-		gameProgressBar.style.borderColor = 'transparent';
-		gameProgressBar.style.background = 'transparent';
+		GameConfig.gameProgressBar.style.width = '0px';
+		GameConfig.gameProgressBar.style.borderColor = 'transparent';
+		GameConfig.gameProgressBar.style.background = 'transparent';
 		if (isMazeMode()) {
-			mazePathTraversed = 0;
+			GameConfig.mazePathTraversed = 0;
 		}
 	};
 
 	// SET UP THE GAME
 	const init = function () {
+		GameConfig.gameProgressBar = document.querySelector('.game-indicator .progress-bar');
+		GameConfig.levelNode = document.querySelector('.level > .value');
+		GameConfig.scoreNode = document.querySelector('.score > .value');
+
 		persistItem('unlockedModes', JSON.stringify(unlockedModes));
 		// selectedMode is important to be decided first as other calculations are dependent on it
 		selectedMode = retrieveItem('selectedMode') || selectedMode;
-		updateLevel(+retrieveItem('selected' + capitalize(selectedMode) + 'Level') || 1);
+		updateLevel(+retrieveItem('selected' + capitalize(selectedMode) + 'level') || 1);
 		calculateMaxLevels();
 		setSnakeLength();
 		setupArena();
