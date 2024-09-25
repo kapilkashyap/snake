@@ -131,8 +131,9 @@ import config from "../assets/config.js";
 		let clone = null;
 		let r = 1;
 		let c = 1;
-		rowsCount = Math.floor(dimensions.height / tileDimension.height);
-		columnsCount = Math.floor(dimensions.width / tileDimension.width);
+		const zoomFactor = isPortableMode && document.body.style.zoom != null ? parseFloat(document.body.style.zoom) / 100 : 1;
+		rowsCount = Math.floor(dimensions.height / zoomFactor / tileDimension.height);
+		columnsCount = Math.floor(dimensions.width / zoomFactor / tileDimension.width);
 		totalRectsCount = columnsCount * rowsCount;
 		baseThresholds = [0, columnsCount];
 
