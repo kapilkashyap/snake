@@ -204,8 +204,9 @@ body.portable-device .game-stats div.life span {
 .game-arena .game-arena-display div.path {
     background-color: #9E9E9E !important;
 }
+/* #00e7ff */
 .game-arena .game-arena-display div.head {
-    background-color: #F57C00 !important;
+    background-color: #ffc800 !important;
 }
 .game-arena .game-arena-display div.tail {
     border-radius: 0 !important;
